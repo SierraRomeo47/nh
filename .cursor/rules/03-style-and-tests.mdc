@@ -1,0 +1,23 @@
+---
+alwaysApply: true
+description: "Coding standards and TDD enforcement"
+---
+
+# Style and Testing Rules
+
+## Language and Tooling
+- TypeScript `strict: true`.
+- ESLint and Prettier required; fix lint errors before merge.
+- Vitest for unit and integration tests.
+
+## TDD Workflow (Enforced)
+1) Write tests first.
+2) Write minimal code to satisfy tests.
+3) Run tests.
+4) Fix until green.
+
+## Coverage and Quality Gates
+- Coverage target: ≥80% lines for new or changed areas.
+- Integration tests for key routes.
+- On persistent failures, stop and request human review.
+

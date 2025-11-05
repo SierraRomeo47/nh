@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core reference entities (read-only from other services)
+model Company {
+  id                      String   @id @default(uuid())
+  name                    String
+  imo_company_number      String   @unique
+  registration_country    String
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  
+  vessels                 Vessel[]
+  balances                FuelEUBalance[]
+  pool_allocations        PoolAllocation[]
+  eua_operations          EUAOperation[]
+  audit_events            AuditEvent[]
+}
+
+model Vessel {
+  id                      String   @id @default(uuid())
+  company_id              String
+  imo_number              String   @unique
+  name                    String
+  flag_state              String
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  
+  company                 Company          @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  voyages                 Voyage[]
+  pool_allocations        PoolAllocation[]
+  
+  @@index([company_id])
+}
+
+model Voyage {
+  id                      String   @id @default(uuid())
+  vessel_id               String
+  start_date              DateTime
+  end_date                DateTime
+  voyage_type             String   // COMMERCIAL | BALLAST
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  
+  vessel                  Vessel           @relation(fields: [vessel_id], references: [id], onDelete: Cascade)
+  emission_records        EmissionRecord[]
+  eua_operations          EUAOperationVoyage[]
+  
+  @@index([vessel_id])
+  @@index([start_date, end_date])
+}
+
+// Compliance entities
+model EmissionRecord {
+  id                      String   @id @default(uuid())
+  voyage_id               String
+  co2_tonnes              Decimal  @db.Decimal(10, 3)
+  n2o_tonnes              Decimal? @db.Decimal(10, 3)
+  ch4_tonnes              Decimal? @db.Decimal(10, 3)
+  energy_gj               Decimal  @db.Decimal(12, 3)
+  import_source           String   // MRV_SYSTEM | MANUAL
+  imported_at             DateTime @default(now())
+  period_year             Int
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  
+  voyage                  Voyage                @relation(fields: [voyage_id], references: [id], onDelete: Cascade)
+  verifications           VerificationRecord[]
+  
+  @@index([voyage_id])
+  @@index([period_year])
+}
+
+model VerificationRecord {
+  id                      String   @id @default(uuid())
+  emission_record_id      String
+  verifier_id             String
+  verification_status     String   // PENDING | VERIFIED | REJECTED
+  certificate_number      String?
+  verified_at             DateTime?
+  findings                String?
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  
+  emission_record         EmissionRecord  @relation(fields: [emission_record_id], references: [id], onDelete: Cascade)
+  
+  @@index([emission_record_id])
+  @@index([verification_status])
+}
+
+model FuelEUBalance {
+  id                      String   @id @default(uuid())
+  company_id              String
+  period_year             Int
+  balance_gco2e           BigInt   // Signed: can be negative (borrowing) or positive (banking)
+  banked_gco2e            BigInt   @default(0)
+  borrowed_gco2e          BigInt   @default(0)
+  pool_allocation_id      String?
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  
+  company                 Company          @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  pool_allocation         PoolAllocation?  @relation(fields: [pool_allocation_id], references: [id], onDelete: SetNull)
+  
+  @@unique([company_id, period_year])
+  @@index([company_id])
+  @@index([period_year])
+}
+
+model PoolAllocation {
+  id                      String   @id @default(uuid())
+  company_id              String
+  vessel_id               String
+  period_year             Int
+  pool_id                 String
+  allocation_type         String   // OUTFLOW | INFLOW
+  amount_gco2e            BigInt
+  effective_from          DateTime @default(now())
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  
+  company                 Company        @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  vessel                  Vessel         @relation(fields: [vessel_id], references: [id], onDelete: Cascade)
+  fuel_eu_balances        FuelEUBalance[]
+  
+  @@unique([vessel_id, period_year])  // One pool per vessel per period
+  @@index([company_id])
+  @@index([period_year])
+  @@index([pool_id])
+}
+
+model EUAOperation {
+  id                      String   @id @default(uuid())
+  company_id              String
+  operation_type          String   // FORECAST | HEDGE | SURRENDER | RECONCILE
+  euas_count              Int      // Positive for forecast/hedge, negative for surrender
+  price_per_eua           Decimal? @db.Decimal(10, 2)
+  executed_at             DateTime
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  
+  company                 Company              @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  voyage_references       EUAOperationVoyage[]
+  
+  @@index([company_id])
+  @@index([operation_type])
+  @@index([executed_at])
+}
+
+model EUAOperationVoyage {
+  id                      String   @id @default(uuid())
+  eua_operation_id        String
+  voyage_id               String
+  created_at              DateTime @default(now())
+  
+  eua_operation           EUAOperation  @relation(fields: [eua_operation_id], references: [id], onDelete: Cascade)
+  voyage                  Voyage        @relation(fields: [voyage_id], references: [id], onDelete: Cascade)
+  
+  @@index([eua_operation_id])
+  @@index([voyage_id])
+}
+
+model AuditEvent {
+  id                      String   @id @default(uuid())
+  user_id                 String?  // FK to User in auth service (via HTTP lookup)
+  event_type              String
+  resource_type           String
+  resource_id             String?
+  action                  String
+  metadata                Json?
+  ip_address              String?
+  user_agent              String?
+  created_at              DateTime @default(now())
+  
+  company                 Company?  @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  company_id              String?
+  
+  @@index([user_id])
+  @@index([resource_type, resource_id])
+  @@index([created_at])
+  @@index([company_id])
+}

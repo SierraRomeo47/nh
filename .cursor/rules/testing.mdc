@@ -1,0 +1,9 @@
+---
+description: Test first execution rules
+alwaysApply: true
+---
+Use test driven development (TDD): write tests then code then run tests.
+Coverage target 80 percent lines for new services.
+Integration tests for key routes.
+Enable yolo mode only when tests for the changed area already exist and coverage stays above target.
+On failure stop and ask for human review.

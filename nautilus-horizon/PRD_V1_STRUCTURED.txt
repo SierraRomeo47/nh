@@ -1,0 +1,1090 @@
+================================================================================
+NAUTILUS HORIZON - PRODUCT REQUIREMENTS DOCUMENT V1
+STRUCTURED USER ROLES & HIERARCHY SYSTEM
+================================================================================
+
+Document Version: 1.0
+Last Updated: December 2024
+Status: Implementation Ready
+Platform: Maritime Compliance & EU ETS Management System
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+SYSTEM OVERVIEW:
+- Maritime compliance platform for EU ETS (Emissions Trading System)
+- Multi-tenant role-based access control system
+- Fleet management and operational oversight platform
+- Real-time compliance monitoring and reporting
+
+CORE OBJECTIVES:
+- Streamline maritime compliance processes
+- Optimize fuel efficiency and emissions tracking
+- Provide role-specific dashboards and tools
+- Enable real-time decision making across fleet operations
+
+================================================================================
+2. USER HIERARCHY ARCHITECTURE
+================================================================================
+
+HIERARCHY STRUCTURE:
+┌─────────────────────────────────────────────────────────────────┐
+│                    ADMINISTRATIVE TIER                          │
+├─────────────────────────────────────────────────────────────────┤
+│  ADMIN                    │  MANAGER                           │
+│  (System Administrator)    │  (Fleet Manager)                  │
+│  - Full system access      │  - Fleet oversight                 │
+│  - User management         │  - Strategic planning              │
+│  - Security control        │  - Resource allocation             │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+┌─────────────────────────────────────────────────────────────────┐
+│                     COMPLIANCE TIER                             │
+├─────────────────────────────────────────────────────────────────┤
+│  COMPLIANCE_OFFICER        │  TRADER                           │
+│  (Compliance Manager)      │  (Emissions Trader)               │
+│  - EU ETS compliance       │  - EUA trading                    │
+│  - Regulatory oversight    │  - Market analysis                │
+│  - Verification processes  │  - Portfolio management           │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+┌─────────────────────────────────────────────────────────────────┐
+│                  SUPERINTENDENT TIER                            │
+├─────────────────────────────────────────────────────────────────┤
+│  TECHNICAL_SUPERINTENDENT  │  OPERATIONS_SUPERINTENDENT        │
+│  - Technical oversight     │  - Operations oversight           │
+│  - Maintenance planning    │  - Performance monitoring         │
+│  - Standards compliance    │  - Resource optimization          │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+┌─────────────────────────────────────────────────────────────────┐
+│                     OPERATIONAL TIER                            │
+├─────────────────────────────────────────────────────────────────┤
+│  CAPTAIN                 │  OFFICER              │  CHIEF_ENGINEER │
+│  - Vessel command        │  - Deck operations    │  - Engine room    │
+│  - Crew management       │  - Navigation assist  │  - Technical mgmt │
+│  - Safety oversight      │  - Compliance monitor │  - Maintenance    │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+┌─────────────────────────────────────────────────────────────────┐
+│                       EXECUTION TIER                            │
+├─────────────────────────────────────────────────────────────────┤
+│  ENGINEER                │  CREW                               │
+│  - Engine maintenance    │  - Task execution                   │
+│  - Fuel monitoring       │  - Fuel logging                     │
+│  - Equipment operation   │  - Equipment maintenance            │
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. DETAILED USER SPECIFICATIONS
+================================================================================
+
+3.1 ADMINISTRATIVE ROLES
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: ADMIN                                                    │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-admin-1                                         │
+│ Name: Sumit Redu                                              │
+│ Email: sumit.redu@poseidon.com                                │
+│ Position: Product Manager                                     │
+│ Organization: org-1                                           │
+│ Access Level: SYSTEM                                          │
+│ Security Clearance: HIGHEST                                   │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── System Management
+│   ├── User creation/deletion/modification
+│   ├── Role assignment and permission management
+│   ├── System configuration and maintenance
+│   └── Security policy enforcement
+├── Monitoring & Analytics
+│   ├── System health monitoring
+│   ├── User activity audit trails
+│   ├── Performance metrics analysis
+│   └── Security incident management
+├── Data Management
+│   ├── Database administration
+│   ├── Backup and recovery operations
+│   ├── Data integrity verification
+│   └── Archive management
+└── Compliance Oversight
+    ├── Regulatory compliance verification
+    ├── Audit trail maintenance
+    ├── Security compliance reporting
+    └── System certification management
+
+DASHBOARD ACCESS:
+- System Overview: Performance, users, alerts
+- User Management: Active users, roles, permissions
+- System Health: Uptime, performance, errors
+- Audit Logs: User actions, system events
+- Security Dashboard: Threats, access patterns
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ User Management     │ FULL    │
+│ System Settings     │ FULL    │
+│ All Dashboards      │ READ    │
+│ All Data            │ READ    │
+│ Audit Logs          │ FULL    │
+│ Security Controls   │ FULL    │
+└─────────────────────┴─────────┘
+
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: MANAGER                                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-manager-1                                       │
+│ Name: Sarfaraz Akhtar                                         │
+│ Email: sarfaraz.akhtar@poseidon.com                           │
+│ Position: Fleet Manager                                       │
+│ Rank: Captain                                                 │
+│ Organization: org-1                                           │
+│ Access Level: FLEET                                           │
+│ Security Clearance: HIGH                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Strategic Planning
+│   ├── Fleet performance analysis
+│   ├── Resource allocation planning
+│   ├── Budget management and forecasting
+│   └── Strategic decision support
+├── Operational Oversight
+│   ├── Fleet-wide operations monitoring
+│   ├── Performance benchmarking
+│   ├── Efficiency optimization
+│   └── Risk management
+├── Financial Management
+│   ├── Revenue tracking and analysis
+│   ├── Cost management and optimization
+│   ├── Compliance cost monitoring
+│   └── Financial reporting
+└── Stakeholder Communication
+    ├── Executive reporting
+    ├── Regulatory communication
+    ├── Client relationship management
+    └── Performance presentations
+
+DASHBOARD ACCESS:
+- Fleet Overview: Size, status, performance
+- Financial Dashboard: Revenue, costs, ROI
+- Performance Analytics: Efficiency, compliance
+- Strategic Planning: Scenarios, forecasts
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Fleet Management    │ FULL    │
+│ Financial Data      │ FULL    │
+│ RFQ Board           │ FULL    │
+│ Scenario Pad        │ FULL    │
+│ Performance Data    │ READ    │
+│ User Management     │ LIMITED │
+└─────────────────────┴─────────┘
+
+================================================================================
+3.2 COMPLIANCE ROLES
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: COMPLIANCE_OFFICER                                       │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-compliance-1                                    │
+│ Name: Vinay Chandra                                           │
+│ Email: vinay.chandra@poseidon.com                             │
+│ Position: Compliance Manager                                  │
+│ Rank: Captain                                                 │
+│ Organization: org-1                                           │
+│ Access Level: COMPLIANCE                                      │
+│ Security Clearance: HIGH                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Regulatory Compliance
+│   ├── EU ETS compliance monitoring
+│   ├── Regulatory requirement tracking
+│   ├── Compliance gap analysis
+│   └── Regulatory reporting
+├── Verification Management
+│   ├── Compliance verification processes
+│   ├── Third-party verification coordination
+│   ├── Documentation management
+│   └── Verification reporting
+├── Deadline Management
+│   ├── Regulatory deadline tracking
+│   ├── Compliance calendar management
+│   ├── Alert and notification systems
+│   └── Deadline compliance reporting
+└── RFQ Management
+    ├── FuelEU pooling RFQ oversight
+    ├── RFQ response coordination
+    ├── Compliance verification for RFQs
+    └── RFQ performance tracking
+
+DASHBOARD ACCESS:
+- Compliance Monitoring: Vessel compliance status
+- Verification Dashboard: Verification processes and status
+- Regulatory Deadlines: Upcoming deadlines and alerts
+- RFQ Board: FuelEU pooling opportunities
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Compliance Monitor  │ FULL    │
+│ Verification        │ FULL    │
+│ Regulatory Deadlines│ FULL    │
+│ RFQ Board           │ FULL    │
+│ Fleet Data          │ READ    │
+│ Financial Data      │ LIMITED │
+└─────────────────────┴─────────┘
+
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: TRADER                                                   │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-trader-1                                        │
+│ Name: Sravan Padavala                                         │
+│ Email: sravan.padavala@poseidon.com                           │
+│ Organization: org-1                                           │
+│ Access Level: TRADING                                         │
+│ Security Clearance: MEDIUM                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Trading Operations
+│   ├── EUA trading execution
+│   ├── Market analysis and research
+│   ├── Trading strategy development
+│   └── Risk assessment and management
+├── Portfolio Management
+│   ├── EUA portfolio tracking
+│   ├── Position management
+│   ├── Performance analysis
+│   └── Portfolio optimization
+├── Market Intelligence
+│   ├── Market data analysis
+│   ├── Price trend monitoring
+│   ├── Market opportunity identification
+│   └── Competitive analysis
+└── RFQ Participation
+    ├── RFQ opportunity evaluation
+    ├── Bid preparation and submission
+    ├── RFQ performance tracking
+    └── Market positioning
+
+DASHBOARD ACCESS:
+- Trading Dashboard: Active trades, positions
+- Market Data: Real-time prices, trends
+- Portfolio: Holdings, performance, P&L
+- RFQ Board: Opportunities, bids
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Trading Opportunities│ FULL    │
+│ Market Data         │ FULL    │
+│ Portfolio           │ FULL    │
+│ RFQ Board           │ READ    │
+│ Fleet Data          │ LIMITED │
+│ Financial Data      │ LIMITED │
+└─────────────────────┴─────────┘
+
+================================================================================
+3.3 SUPERINTENDENT ROLES
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: TECHNICAL_SUPERINTENDENT                                 │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-tech-super-1                                    │
+│ Name: Nitesh Chandak                                          │
+│ Email: nitesh.chandak@poseidon.com                            │
+│ Position: Technical Superintendent                             │
+│ Organization: org-1                                           │
+│ Access Level: TECHNICAL                                       │
+│ Security Clearance: HIGH                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Technical Oversight
+│   ├── Fleet-wide technical standards
+│   ├── Technical compliance monitoring
+│   ├── Technical risk assessment
+│   └── Technical performance analysis
+├── Maintenance Management
+│   ├── Fleet maintenance planning
+│   ├── Maintenance scheduling optimization
+│   ├── Vendor management and coordination
+│   └── Maintenance cost optimization
+├── Standards Management
+│   ├── Technical standards implementation
+│   ├── Compliance verification
+│   ├── Technical documentation management
+│   └── Standards training coordination
+└── Technical Reporting
+    ├── Technical performance reporting
+    ├── Maintenance analytics
+    ├── Technical compliance reporting
+    └── Technical recommendations
+
+DASHBOARD ACCESS:
+- Technical Dashboard: Fleet technical status
+- Maintenance Planning: Schedules, costs, vendors
+- Technical Compliance: Standards, certifications
+- Performance Analytics: Technical metrics
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Fleet Management    │ FULL    │
+│ Technical Data      │ FULL    │
+│ Maintenance Tools   │ FULL    │
+│ Performance Data    │ READ    │
+│ Financial Data      │ LIMITED │
+└─────────────────────┴─────────┘
+
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: OPERATIONS_SUPERINTENDENT                                │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-ops-super-1                                     │
+│ Name: Nitin Singh                                             │
+│ Email: nitin.singh@poseidon.com                               │
+│ Position: Operations Superintendent                            │
+│ Rank: Captain                                                  │
+│ Organization: org-1                                           │
+│ Access Level: OPERATIONS                                      │
+│ Security Clearance: HIGH                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Operations Oversight
+│   ├── Fleet operations coordination
+│   ├── Operational efficiency optimization
+│   ├── Performance benchmarking
+│   └── Operational risk management
+├── Resource Management
+│   ├── Resource allocation optimization
+│   ├── Capacity planning
+│   ├── Resource utilization analysis
+│   └── Resource cost optimization
+├── Performance Management
+│   ├── Operational KPIs monitoring
+│   ├── Performance improvement initiatives
+│   ├── Benchmarking and comparison
+│   └── Performance reporting
+└── Operational Reporting
+    ├── Operations status reporting
+    ├── Performance analytics
+    ├── Efficiency reporting
+    └── Operational recommendations
+
+DASHBOARD ACCESS:
+- Operations Dashboard: Fleet operations status
+- Resource Management: Allocation, utilization
+- Performance Monitoring: KPIs, benchmarks
+- Efficiency Analytics: Optimization opportunities
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Fleet Management    │ FULL    │
+│ Operations Data     │ FULL    │
+│ Performance Data    │ FULL    │
+│ Resource Data       │ FULL    │
+│ Financial Data      │ LIMITED │
+└─────────────────────┴─────────┘
+
+================================================================================
+3.4 OPERATIONAL ROLES
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: CAPTAIN                                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-captain-1                                       │
+│ Name: David Anderson                                          │
+│ Email: captain@poseidon.com                                   │
+│ Ship: Delta Horizon (IMO: 9391004)                           │
+│ Rank: Captain                                                 │
+│ Organization: org-1                                           │
+│ Access Level: VESSEL                                          │
+│ Security Clearance: MEDIUM                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Vessel Command
+│   ├── Navigation and route planning
+│   ├── Safety management and oversight
+│   ├── Emergency response coordination
+│   └── Port communication and coordination
+├── Crew Management
+│   ├── Crew task assignment and supervision
+│   ├── Crew performance monitoring
+│   ├── Safety training coordination
+│   └── Crew scheduling and management
+├── Operational Management
+│   ├── Voyage planning and execution
+│   ├── Operational reporting
+│   ├── Safety compliance monitoring
+│   └── Port operations coordination
+└── Communication
+    ├── Shore office communication
+    ├── Port authority coordination
+    ├── Crew communication management
+    └── Emergency communication protocols
+
+DASHBOARD ACCESS:
+- Vessel Dashboard: Ship status, operations
+- Voyage Management: Active voyages, planning
+- Crew Management: Tasks, performance, scheduling
+- Safety Dashboard: Safety metrics, compliance
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Voyages             │ FULL    │
+│ Crew Tasks          │ FULL    │
+│ Vessel Data         │ FULL    │
+│ Safety Data         │ FULL    │
+│ Fleet Data          │ READ    │
+│ Financial Data      │ NONE    │
+└─────────────────────┴─────────┘
+
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: OFFICER                                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-officer-1                                       │
+│ Name: Jane Smith                                              │
+│ Email: officer@poseidon.com                                   │
+│ Ship: Baltic Star (IMO: 9391002)                             │
+│ Rank: Chief Officer                                           │
+│ Organization: org-1                                           │
+│ Access Level: VESSEL                                          │
+│ Security Clearance: MEDIUM                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Deck Operations
+│   ├── Navigation assistance and support
+│   ├── Deck equipment operation and maintenance
+│   ├── Cargo operations coordination
+│   └── Safety equipment management
+├── Crew Supervision
+│   ├── Crew task supervision and coordination
+│   ├── Crew performance monitoring
+│   ├── Training coordination and oversight
+│   └── Crew scheduling assistance
+├── Compliance Monitoring
+│   ├── Operational compliance verification
+│   ├── Safety compliance monitoring
+│   ├── Environmental compliance tracking
+│   └── Compliance reporting
+└── Operational Support
+    ├── Voyage planning support
+    ├── Port operations assistance
+    ├── Emergency response support
+    └── Operational documentation
+
+DASHBOARD ACCESS:
+- Operations Dashboard: Deck operations, navigation
+- Crew Management: Task supervision, performance
+- Compliance Dashboard: Safety, environmental compliance
+- Voyage Support: Planning, execution support
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Voyages             │ READ    │
+│ Crew Tasks          │ FULL    │
+│ Compliance Monitor  │ READ    │
+│ Vessel Data         │ READ    │
+│ Fleet Data          │ LIMITED │
+└─────────────────────┴─────────┘
+
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: CHIEF_ENGINEER                                           │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-chief-engineer-1                                │
+│ Name: Maria Rodriguez                                          │
+│ Email: chief.engineer@poseidon.com                             │
+│ Ship: Eastern Crest (IMO: 9391005)                            │
+│ Rank: Chief Engineer                                           │
+│ Organization: org-1                                           │
+│ Access Level: ENGINE_ROOM                                     │
+│ Security Clearance: MEDIUM                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Engine Room Management
+│   ├── Engine operations and monitoring
+│   ├── Engine performance optimization
+│   ├── Engine maintenance coordination
+│   └── Engine safety management
+├── Technical Maintenance
+│   ├── Maintenance planning and scheduling
+│   ├── Maintenance execution oversight
+│   ├── Spare parts management
+│   └── Maintenance documentation
+├── Fuel Management
+│   ├── Fuel consumption monitoring
+│   ├── Fuel efficiency optimization
+│   ├── Fuel quality management
+│   └── Fuel cost tracking
+└── Technical Reporting
+    ├── Engine performance reporting
+    ├── Maintenance reporting
+    ├── Fuel consumption reporting
+    └── Technical compliance reporting
+
+DASHBOARD ACCESS:
+- Engine Dashboard: Engine status, performance
+- Maintenance Dashboard: Schedules, costs, status
+- Fuel Dashboard: Consumption, efficiency, costs
+- Technical Dashboard: Performance, compliance
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Engine Status       │ FULL    │
+│ Maintenance         │ FULL    │
+│ Fuel Consumption    │ FULL    │
+│ Vessel Data         │ READ    │
+│ Technical Data      │ FULL    │
+└─────────────────────┴─────────┘
+
+================================================================================
+3.5 EXECUTION ROLES
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: ENGINEER                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-engineer-1                                      │
+│ Name: Mike Wong                                               │
+│ Email: engineer@poseidon.com                                  │
+│ Ship: Coral Wave (IMO: 9391003)                              │
+│ Rank: Chief Engineer                                          │
+│ Organization: org-1                                           │
+│ Access Level: ENGINE_ROOM                                     │
+│ Security Clearance: LOW                                       │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Engine Operations
+│   ├── Engine operation and monitoring
+│   ├── Equipment maintenance execution
+│   ├── System troubleshooting
+│   └── Performance data collection
+├── Maintenance Execution
+│   ├── Preventive maintenance tasks
+│   ├── Corrective maintenance execution
+│   ├── Maintenance documentation
+│   └── Spare parts requisition
+├── Fuel Operations
+│   ├── Fuel consumption monitoring
+│   ├── Fuel system maintenance
+│   ├── Fuel quality testing
+│   └── Fuel efficiency optimization
+└── Technical Support
+    ├── Equipment operation support
+    ├── Technical documentation maintenance
+    ├── Safety compliance support
+    └── Technical reporting
+
+DASHBOARD ACCESS:
+- Engine Status: Real-time engine data
+- Maintenance Tasks: Assigned maintenance work
+- Fuel Monitoring: Consumption tracking
+- Performance Tracking: Efficiency metrics
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Engine Status       │ READ    │
+│ Maintenance         │ EXECUTE │
+│ Fuel Consumption    │ READ    │
+│ Technical Data      │ READ    │
+└─────────────────────┴─────────┘
+
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ROLE: CREW                                                     │
+├─────────────────────────────────────────────────────────────────┤
+│ User ID: user-crew-1                                          │
+│ Name: John Doe                                                │
+│ Email: crew@poseidon.com                                      │
+│ Ship: Aurora Spirit (IMO: 9391001)                           │
+│ Rank: Able Seaman                                             │
+│ Organization: org-1                                           │
+│ Access Level: OPERATIONAL                                     │
+│ Security Clearance: LOW                                       │
+└─────────────────────────────────────────────────────────────────┘
+
+FUNCTIONS:
+├── Task Execution
+│   ├── Assigned task completion
+│   ├── Task progress reporting
+│   ├── Task documentation
+│   └── Task quality assurance
+├── Fuel Logging
+│   ├── Daily fuel consumption logging
+│   ├── Fuel quality recording
+│   ├── Fuel efficiency monitoring
+│   └── Fuel reporting
+├── Equipment Maintenance
+│   ├── Routine equipment maintenance
+│   ├── Equipment inspection
+│   ├── Maintenance reporting
+│   └── Equipment status updates
+└── Performance Tracking
+    ├── Personal performance monitoring
+    ├── Performance goal tracking
+    ├── Skill development tracking
+    └── Performance reporting
+
+DASHBOARD ACCESS:
+- Personal Dashboard: Tasks, performance, goals
+- Crew League: Rankings, competitions, achievements
+- Fuel Logging: Daily logging interface
+- Performance Tracking: Personal metrics
+
+PERMISSIONS MATRIX:
+┌─────────────────────┬─────────┐
+│ Feature             │ Access  │
+├─────────────────────┼─────────┤
+│ Crew Tasks          │ PERSONAL│
+│ Crew League         │ READ    │
+│ Fuel Logging        │ WRITE   │
+│ Personal Data       │ FULL    │
+└─────────────────────┴─────────┘
+
+================================================================================
+4. FUNCTIONAL REQUIREMENTS
+================================================================================
+
+4.1 AUTHENTICATION & AUTHORIZATION
+================================================================================
+
+AUTHENTICATION REQUIREMENTS:
+├── Multi-Factor Authentication (MFA)
+│   ├── Required for: ADMIN, MANAGER, COMPLIANCE_OFFICER
+│   ├── Optional for: All other roles
+│   └── Implementation: TOTP, SMS, Email verification
+├── Session Management
+│   ├── Session timeout: 8 hours (admin), 12 hours (operational)
+│   ├── Concurrent session limit: 2 per user
+│   └── Session invalidation on role change
+├── Password Policy
+│   ├── Minimum 12 characters
+│   ├── Complex character requirements
+│   ├── Password history: 12 previous passwords
+│   └── Password expiration: 90 days
+└── Account Lockout
+    ├── Failed attempts: 5 before lockout
+    ├── Lockout duration: 30 minutes
+    └── Admin unlock required after 3 lockouts
+
+AUTHORIZATION FRAMEWORK:
+├── Role-Based Access Control (RBAC)
+│   ├── Hierarchical permission inheritance
+│   ├── Dynamic role assignment
+│   └── Permission delegation capabilities
+├── Attribute-Based Access Control (ABAC)
+│   ├── Context-aware permissions
+│   ├── Time-based access controls
+│   └── Location-based restrictions
+├── Data Access Controls
+│   ├── Row-level security by vessel/ship
+│   ├── Column-level security for sensitive data
+│   └── Field-level encryption for PII
+└── API Access Controls
+    ├── OAuth 2.0 with JWT tokens
+    ├── Rate limiting per role
+    └── API key management for external systems
+
+================================================================================
+4.2 DATA MANAGEMENT
+================================================================================
+
+DATA CLASSIFICATION:
+├── PUBLIC DATA
+│   ├── Public vessel information
+│   ├── General market data
+│   └── Public regulatory information
+├── INTERNAL DATA
+│   ├── Operational metrics
+│   ├── Performance data
+│   └── Internal procedures
+├── CONFIDENTIAL DATA
+│   ├── Financial information
+│   ├── Compliance data
+│   └── Strategic planning data
+└── RESTRICTED DATA
+    ├── Personal information (PII)
+    ├── Security credentials
+    └── Trade secrets
+
+DATA ACCESS MATRIX:
+┌─────────────────┬──────────┬──────────┬────────────┬─────────────┐
+│ Data Type       │ PUBLIC   │ INTERNAL │ CONFIDENTIAL│ RESTRICTED  │
+├─────────────────┼──────────┼──────────┼────────────┼─────────────┤
+│ ADMIN           │ READ     │ READ     │ READ/WRITE │ READ/WRITE  │
+│ MANAGER         │ READ     │ READ     │ READ/WRITE │ READ        │
+│ COMPLIANCE_OFF  │ READ     │ READ     │ READ/WRITE │ READ        │
+│ TRADER          │ READ     │ READ     │ READ/WRITE │ READ        │
+│ CAPTAIN         │ READ     │ READ     │ READ       │ READ        │
+│ OFFICER         │ READ     │ READ     │ READ       │ READ        │
+│ ENGINEER        │ READ     │ READ     │ READ       │ READ        │
+│ CREW            │ READ     │ READ     │ NONE       │ NONE        │
+│ CHIEF_ENGINEER  │ READ     │ READ     │ READ       │ READ        │
+│ TECH_SUPER      │ READ     │ READ     │ READ/WRITE │ READ        │
+│ OPS_SUPER       │ READ     │ READ     │ READ/WRITE │ READ        │
+└─────────────────┴──────────┴──────────┴────────────┴─────────────┘
+
+================================================================================
+4.3 SYSTEM INTEGRATION
+================================================================================
+
+EXTERNAL SYSTEM INTEGRATIONS:
+├── Vessel Tracking Systems
+│   ├── AIS (Automatic Identification System)
+│   ├── GPS tracking and positioning
+│   └── Vessel monitoring systems
+├── Fuel Monitoring Systems
+│   ├── Fuel consumption meters
+│   ├── Fuel quality sensors
+│   └── Bunker delivery notes (BDN)
+├── Regulatory Systems
+│   ├── EU ETS registry integration
+│   ├── IMO reporting systems
+│   └── Port state control systems
+└── Financial Systems
+    ├── Trading platforms
+    ├── Banking systems
+    └── Accounting systems
+
+API SPECIFICATIONS:
+├── RESTful API Endpoints
+│   ├── Authentication: /api/auth/*
+│   ├── User Management: /api/users/*
+│   ├── Vessel Data: /api/vessels/*
+│   ├── Compliance: /api/compliance/*
+│   └── Trading: /api/trading/*
+├── WebSocket Connections
+│   ├── Real-time vessel tracking
+│   ├── Live market data feeds
+│   └── System notifications
+└── Data Synchronization
+    ├── Batch data imports/exports
+    ├── Real-time data streaming
+    └── Conflict resolution mechanisms
+
+================================================================================
+5. TECHNICAL SPECIFICATIONS
+================================================================================
+
+5.1 PERFORMANCE REQUIREMENTS
+================================================================================
+
+RESPONSE TIME REQUIREMENTS:
+├── Dashboard Loading
+│   ├── Initial load: < 2 seconds
+│   ├── Subsequent loads: < 1 second
+│   └── Data refresh: < 500ms
+├── Navigation
+│   ├── Page transitions: < 500ms
+│   ├── Menu interactions: < 200ms
+│   └── Search results: < 1 second
+├── Data Operations
+│   ├── CRUD operations: < 1 second
+│   ├── Complex queries: < 3 seconds
+│   └── Report generation: < 10 seconds
+└── Real-time Updates
+    ├── Live data updates: < 1 second
+    ├── Notifications: < 500ms
+    └── Alerts: < 200ms
+
+SCALABILITY REQUIREMENTS:
+├── User Capacity
+│   ├── Concurrent users: 1,000+
+│   ├── Total users: 10,000+
+│   └── Peak load handling: 3x normal capacity
+├── Data Capacity
+│   ├── Vessels: 10,000+
+│   ├── Transactions: 1M+ daily
+│   └── Data storage: 100TB+
+└── System Availability
+    ├── Uptime: 99.9%
+    ├── Recovery time: < 4 hours
+    └── Backup frequency: Daily
+
+================================================================================
+5.2 SECURITY REQUIREMENTS
+================================================================================
+
+SECURITY CONTROLS:
+├── Encryption
+│   ├── Data at rest: AES-256
+│   ├── Data in transit: TLS 1.3
+│   └── Database encryption: Transparent Data Encryption
+├── Access Controls
+│   ├── Network segmentation
+│   ├── Firewall rules
+│   └── VPN access for remote users
+├── Monitoring
+│   ├── Security event logging
+│   ├── Intrusion detection
+│   └── Behavioral analytics
+└── Compliance
+    ├── GDPR compliance
+    ├── SOX compliance
+    └── Maritime regulations compliance
+
+AUDIT REQUIREMENTS:
+├── User Activity Logging
+│   ├── Login/logout events
+│   ├── Data access events
+│   ├── Permission changes
+│   └── System configuration changes
+├── Data Audit Trail
+│   ├── Data modification history
+│   ├── Data access logs
+│   ├── Data export logs
+│   └── Data deletion logs
+├── System Audit
+│   ├── System configuration changes
+│   ├── Security policy changes
+│   ├── Software updates
+│   └── Infrastructure changes
+└── Compliance Reporting
+    ├── Regular compliance reports
+    ├── Audit trail reports
+    ├── Security incident reports
+    └── Performance reports
+
+================================================================================
+6. IMPLEMENTATION ROADMAP
+================================================================================
+
+PHASE 1: CORE INFRASTRUCTURE (Months 1-3)
+├── User Management System
+│   ├── Authentication and authorization
+│   ├── Role-based access control
+│   └── User profile management
+├── Basic Dashboard Framework
+│   ├── Role-specific dashboards
+│   ├── Navigation system
+│   └── Responsive design
+└── Data Management Foundation
+    ├── Database schema design
+    ├── Data access layer
+    └── Basic CRUD operations
+
+PHASE 2: OPERATIONAL FEATURES (Months 4-6)
+├── Vessel Management
+│   ├── Vessel registration and tracking
+│   ├── Voyage management
+│   └── Operational reporting
+├── Compliance Features
+│   ├── EU ETS compliance tracking
+│   ├── Regulatory deadline management
+│   └── Verification processes
+└── Trading Platform
+    ├── RFQ board functionality
+    ├── Market data integration
+    └── Portfolio management
+
+PHASE 3: ADVANCED FEATURES (Months 7-9)
+├── Analytics and Reporting
+│   ├── Advanced analytics dashboard
+│   ├── Custom report generation
+│   └── Performance benchmarking
+├── Integration Enhancements
+│   ├── External system integrations
+│   ├── API development
+│   └── Data synchronization
+└── Mobile Application
+    ├── Mobile-responsive design
+    ├── Offline capabilities
+    └── Push notifications
+
+PHASE 4: OPTIMIZATION (Months 10-12)
+├── Performance Optimization
+│   ├── System performance tuning
+│   ├── Database optimization
+│   └── Caching implementation
+├── Security Enhancements
+│   ├── Advanced security features
+│   ├── Penetration testing
+│   └── Security compliance audit
+└── User Experience Improvements
+    ├── UI/UX enhancements
+    ├── Accessibility improvements
+    └── User training materials
+
+================================================================================
+7. SUCCESS METRICS
+================================================================================
+
+USER ADOPTION METRICS:
+├── User Engagement
+│   ├── Daily active users (DAU)
+│   ├── Monthly active users (MAU)
+│   ├── Session duration
+│   └── Feature utilization rates
+├── User Satisfaction
+│   ├── User satisfaction scores (1-10)
+│   ├── Net Promoter Score (NPS)
+│   ├── User feedback ratings
+│   └── Support ticket volume
+└── Training Effectiveness
+    ├── Training completion rates
+    ├── Time to proficiency
+    ├── User onboarding success rate
+    └── Help documentation usage
+
+OPERATIONAL EFFICIENCY METRICS:
+├── Process Efficiency
+│   ├── Compliance reporting time reduction
+│   ├── Data entry time reduction
+│   ├── Report generation speed
+│   └── Error rate reduction
+├── Cost Optimization
+│   ├── Fuel efficiency improvements
+│   ├── Maintenance cost reduction
+│   ├── Operational cost savings
+│   └── ROI on system implementation
+└── Performance Improvements
+    ├── Fleet performance metrics
+    ├── Compliance rate improvements
+    ├── Safety incident reduction
+    └── Environmental impact reduction
+
+SYSTEM PERFORMANCE METRICS:
+├── Technical Performance
+│   ├── System uptime percentage
+│   ├── Response time metrics
+│   ├── Error rates
+│   └── System throughput
+├── Data Quality
+│   ├── Data accuracy rates
+│   ├── Data completeness
+│   ├── Data consistency
+│   └── Data freshness
+└── Security Metrics
+    ├── Security incident frequency
+    ├── Failed authentication attempts
+    ├── Unauthorized access attempts
+    └── Security compliance scores
+
+================================================================================
+8. RISK ASSESSMENT
+================================================================================
+
+TECHNICAL RISKS:
+├── System Integration Risks
+│   ├── External system compatibility issues
+│   ├── Data synchronization failures
+│   ├── API rate limiting constraints
+│   └── Third-party service dependencies
+├── Performance Risks
+│   ├── System scalability limitations
+│   ├── Database performance bottlenecks
+│   ├── Network latency issues
+│   └── Concurrent user load handling
+├── Security Risks
+│   ├── Data breach vulnerabilities
+│   ├── Unauthorized access attempts
+│   ├── Malware and virus threats
+│   └── Insider threat potential
+└── Data Risks
+    ├── Data loss and corruption
+    ├── Data privacy violations
+    ├── Regulatory compliance failures
+    └── Data backup and recovery issues
+
+BUSINESS RISKS:
+├── User Adoption Risks
+│   ├── Resistance to change
+│   ├── Training and onboarding challenges
+│   ├── User interface complexity
+│   └── Feature relevance concerns
+├── Operational Risks
+│   ├── Process disruption during implementation
+│   ├── Data migration challenges
+│   ├── System downtime impact
+│   └── Workflow integration issues
+├── Compliance Risks
+│   ├── Regulatory requirement changes
+│   ├── Compliance reporting failures
+│   ├── Audit trail inadequacies
+│   └── Data retention policy violations
+└── Financial Risks
+    ├── Implementation cost overruns
+    ├── ROI achievement delays
+    ├── Maintenance cost increases
+    └── Training cost escalations
+
+MITIGATION STRATEGIES:
+├── Technical Mitigation
+│   ├── Comprehensive testing protocols
+│   ├── Redundancy and failover systems
+│   ├── Regular security audits
+│   └── Performance monitoring systems
+├── Business Mitigation
+│   ├── Change management programs
+│   ├── User training and support
+│   ├── Phased implementation approach
+│   └── Stakeholder communication plans
+├── Compliance Mitigation
+│   ├── Regular compliance reviews
+│   ├── Automated compliance monitoring
+│   ├── Legal and regulatory consultation
+│   └── Documentation and audit trails
+└── Financial Mitigation
+    ├── Budget monitoring and controls
+    ├── ROI tracking and reporting
+    ├── Cost-benefit analysis
+    └── Alternative solution evaluation
+
+================================================================================
+END OF DOCUMENT
+================================================================================
+
+Document Classification: CONFIDENTIAL
+Distribution: Authorized Personnel Only
+Review Cycle: Quarterly
+Next Review Date: March 2025
+
+Approval Authority:
+- Product Manager: Sumit Redu
+- Fleet Manager: Sarfaraz Akhtar  
+- Compliance Manager: Vinay Chandra
+- Technical Lead: Nitesh Chandak
+
+================================================================================

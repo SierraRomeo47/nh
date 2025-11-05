@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nautilus Horizon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'primary': '#FF6A00',
+              'background': '#0B0B0B',
+              'accent-a': '#D90429',
+              'accent-b': '#FFFFFF',
+              'card': '#1C1C1E',
+              'subtle': '#3A3A3C',
+              'text-primary': '#FFFFFF',
+              'text-secondary': '#E5E5E7',
+              'text-muted': '#A1A1AA',
+              'success': '#10B981',
+              'warning': '#F59E0B',
+              'error': '#EF4444',
+              'info': '#3B82F6',
+            },
+            borderRadius: {
+              'soft': '1.2rem',
+            },
+          },
+        },
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@1.21.0",
+    "react": "https://aistudiocdn.com/react@19.2.0",
+    "react-dom": "https://aistudiocdn.com/react-dom@19.2.0",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@19.2.0/client",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@6.23.0",
+    "recharts": "https://aistudiocdn.com/recharts@2.13.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@19.2.0/",
+    "react/": "https://aistudiocdn.com/react@19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-background text-accent-b">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

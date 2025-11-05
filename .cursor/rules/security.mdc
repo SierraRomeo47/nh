@@ -1,0 +1,14 @@
+---
+description: Security guardrails
+alwaysApply: true
+---
+Transport layer security (TLS) 1.3 in production.
+At rest encryption with advanced encryption standard (AES) 256 where the cloud offers it.
+Authentication uses JSON web token (JWT) access plus refresh.
+Never invent cryptography. Never return secrets in responses.
+Mask tokens and secrets in logs.
+Role based access control (RBAC) on server then attribute based access control (ABAC) for vessel scope.
+Cross site request forgery (CSRF) protection on browser flows.
+Personally identifiable information (PII) must not be logged.
+Error shape is { code  message  traceId }.
+Security tests must pass before merging.

@@ -1,0 +1,5 @@
+{
+  "name": "Nautilus Horizon",
+  "description": "A web application for shipping commercial and compliance teams to manage fuel efficiency and total compliance cost. It features a 'Trading Mode' for EU ETS and FuelEU regulations, including pooling, banking/borrowing, and a scenario planning tool.",
+  "requestFramePermissions": []
+}

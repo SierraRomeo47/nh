@@ -1,0 +1,126 @@
+// Prisma schema for Auth service (initial draft; migrations to follow)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String   @id @default(uuid())
+  email              String   @unique
+  emailVerifiedAt    DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  isLocked           Boolean  @default(false)
+  failedLoginCount   Int      @default(0)
+  lastFailedLoginAt  DateTime?
+  lastLoginAt        DateTime?
+  passwordUpdatedAt  DateTime?
+
+  credential EmailCredential?
+  roles      UserRole[]
+  mfaSecret  MfaSecret?
+  tokens     RefreshToken[]
+  audits     AuditEvent[]
+  loginAttempts LoginAttempt[]
+}
+
+model EmailCredential {
+  userId         String  @id
+  passwordHash   String
+  passwordVersion Int    @default(1)
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Role {
+  id    String    @id @default(uuid())
+  name  String    @unique
+  users UserRole[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([userId, roleId])
+}
+
+model MfaSecret {
+  userId         String  @id
+  secretEncrypted String
+  algorithm      String  @default("SHA1")
+  digits         Int     @default(6)
+  period         Int     @default(30)
+  isVerified     Boolean @default(false)
+  createdAt      DateTime @default(now())
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id                String    @id @default(uuid())
+  userId            String
+  tokenHash         String    @unique
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  replacedByTokenId String?
+  userAgent         String?
+  ip                String?
+  fingerprintHash   String?
+  jti               String
+  rotationCounter   Int       @default(0)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum AuditType {
+  USER_REGISTERED
+  LOGIN_SUCCEEDED
+  LOGIN_FAILED
+  MFA_ENROLLED
+  MFA_VERIFIED
+  TOKEN_REFRESHED
+  TOKEN_REVOKED
+  ACCOUNT_LOCKED
+  ACCOUNT_UNLOCKED
+  PASSWORD_CHANGED
+  LOGOUT
+}
+
+model AuditEvent {
+  id        String    @id @default(uuid())
+  userId    String?
+  type      AuditType
+  metadata  Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+  user      User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  userId    String?
+  email     String?
+  success   Boolean
+  reason    String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+}
+
+

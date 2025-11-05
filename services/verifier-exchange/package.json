@@ -1,0 +1,12 @@
+{
+  "name": "@nautilus/verifier-exchange",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest"
+  }
+}

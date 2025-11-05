@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+description: "Cursor operational constraints and behaviors"
+---
+
+# Cursor Operational Rules
+
+- Respect `.cursorignore` at all times.
+- Do not use "ask entire codebase" operations.
+- Ask clarifying questions if context is missing.
+- Use YOLO mode only after tests exist and only with explicit user approval.
+- Cross-service calls must go through the nginx gateway over HTTP; no direct service imports.
+- No controller talks directly to a repository. Preserve layering.
+

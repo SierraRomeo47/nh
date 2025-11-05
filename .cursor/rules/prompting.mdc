@@ -1,0 +1,9 @@
+---
+description: Plan first prompting rules
+alwaysApply: true
+---
+Always respond with
+1) a plan that lists files and tests you will write
+2) the minimal code to satisfy tests
+3) run results then a short summary
+Auto-refine at most three tries then stop and ask for human input.

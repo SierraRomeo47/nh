@@ -1,0 +1,95 @@
+---
+alwaysApply: false
+globs:
+  - "**/*"
+description: "Project objectives and architecture"
+---
+
+# Nautilus Horizon v1.3 — Project Objectives and Architecture
+
+## Objectives
+- Deliver a secure, modular maritime platform for emissions, compliance, and trading workflows.
+- Behave like a careful junior developer: plan first, follow TDD, and prefer smallest safe change.
+
+## High-level Architecture
+- Layering: controller -> service -> repository -> database.
+- Services: `auth`, `vessels`, `voyages`, `compliance`, `trading`.
+- All cross-service calls via HTTP through the nginx gateway routes: `/auth`, `/vessels`, `/voyages`, `/compliance`, `/trading`.
+- No controller talks directly to a repository. No service imports another service. Cross-service is HTTP only.
+- Models and DTOs are defined per service. No shared mutable state.
+- Outbound HTTP calls use a single reusable HTTP client with retries and timeouts.
+- Each service exposes `/health` for compose healthchecks.
+
+## Security Foundations
+- TLS 1.3 in production.
+- At-rest encryption with AES-256 where available from cloud provider.
+- Authentication via JWT (access + refresh). Mask tokens and secrets in logs.
+- RBAC on server and ABAC for vessel scope.
+- CSRF protection on browser flows.
+- Error shape: `{ code  message  traceId }`.
+- PII must not be logged.
+
+## Folder Map (Suggested)
+
+### Web App
+```
+web/
+  src/
+    app/                # routes/pages and layout
+    components/         # UI components
+    features/           # feature slices (auth, vessels, voyages, etc.)
+    lib/                # http client, config, utils
+    state/              # state mgmt (if used)
+    types/              # frontend-only types (no backend DTOs shared)
+  tests/
+    e2e/
+    integration/
+    unit/
+```
+
+### Services
+```
+services/
+  auth/
+    src/
+      controller/
+      service/
+      repository/
+      model/           # entities, DTOs for auth
+      http/            # outbound http client usage
+      config/
+      routes/
+    tests/
+
+  vessels/
+    src/{controller,service,repository,model,http,config,routes}/
+    tests/
+
+  voyages/
+    src/{controller,service,repository,model,http,config,routes}/
+    tests/
+
+  compliance/
+    src/{controller,service,repository,model,http,config,routes}/
+    tests/
+
+  trading/
+    src/{controller,service,repository,model,http,config,routes}/
+    tests/
+```
+
+### Shared (Non-code Contracts Only)
+```
+shared/
+  docs/                # ADRs, protocols, error shapes
+  schemas/             # openapi/json schema
+```
+- Note: No shared mutable code. Keep DTOs/models per service; use schemas for contract alignment.
+
+## HTTP Client
+- Single client with: timeouts, retry with backoff for idempotent requests, circuit-breaker optional, consistent logging (mask secrets), correlation `traceId` propagation.
+
+## Health and Observability
+- `/health` per service. Add readiness/liveness checks.
+- Structured logs with `traceId`. No PII. Secrets masked.
+

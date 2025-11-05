@@ -1,0 +1,10 @@
+---
+description: Microservices plan and layering rules
+alwaysApply: true
+---
+Services: auth  vessels  voyages  compliance  trading. Route via nginx gateway on /auth /vessels /voyages /compliance /trading.
+Layering: controller -> service -> repository -> database.
+No controller talks to a repository directly. No service imports another service. Cross service calls go through HTTP at the gateway.
+Models and data transfer objects (DTO) live inside each service. No shared mutable state.
+All outbound calls use a single HTTP client     with retries and timeouts.
+Each service exposes a /health endpoint for compose healthchecks.

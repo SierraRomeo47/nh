@@ -1,0 +1,13 @@
+.env*
+secrets/**
+node_modules/**
+build/**
+dist/**
+coverage/**
+logs/**
+*.log
+*.log.*
+*.tmp
+*.cache/**
+
+

@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+description: "Security guardrails and mandatory practices"
+---
+
+# Security Guardrails
+
+## Mandatory Practices
+- Do not commit secrets. Use environment variables or secret managers.
+- Always add input validation at boundaries (HTTP, queue, file import).
+- Use parameterized queries for all database access.
+- Follow OWASP ASVS baseline controls.
+- Run SAST (Static Application Security Testing) and SCA (Software Composition Analysis) in CI.
+- Mask tokens, API keys, and credentials in logs.
+- Do not log PII.
+- Enforce TLS 1.3 in production; AES-256 at rest where the cloud offers it.
+- JWT auth with access + refresh tokens; server-side RBAC and ABAC for vessel scope.
+- CSRF protection for browser flows.
+- Standard error shape: `{ code  message  traceId }`.
+
+## Process Requirements
+- Require an "overview first" plan before any code changes.
+- Limit autonomous agent self-edits to 3 before mandatory human review.
+- Never invent cryptography. Use vetted libraries only.
+

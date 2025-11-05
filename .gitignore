@@ -1,0 +1,133 @@
+# Nautilus Horizon - Git Ignore File
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Environment variables - SECURITY CRITICAL
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+**/.env
+**/.env.local
+
+# Secrets and keys - DO NOT COMMIT
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.output/
+coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+lerna-debug.log*
+.DS_Store
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker volumes and data
+docker/volumes/
+*.sql.backup
+pgdata/
+
+# Test coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Database dumps
+*.sql.gz
+*.dump
+backup*.sql
+
+# Large binary files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Cache
+.cache/
+.parcel-cache/
+.turbo/
+.eslintcache
+.stylelintcache
+
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
+
+# Production build artifacts
+*.js.map
+*.css.map
+
+# Local development
+.local/
+local/
+
+# Cursor specific
+.cursor/cache/
+.cursor/logs/
+
+# Keep these files
+!.cursor/rules/
+!.gitignore
+!.cursorignore
+
+# Documentation exports
+docs/exports/
+*.pdf
+
+# Screenshots from testing
+*.png
+*.jpg
+*.jpeg
+!docs/screenshots/.gitkeep
+
+# Sensitive data
+**/sensitive/
+**/confidential/
+
