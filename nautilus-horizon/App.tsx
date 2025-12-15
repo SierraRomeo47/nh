@@ -27,6 +27,10 @@ import Verification from './pages/Verification';
 import Voyages from './pages/Voyages';
 import WasteHeatRecovery from './pages/WasteHeatRecovery';
 import InsuranceQuotes from './pages/InsuranceQuotes';
+import CharterMarket from './pages/CharterMarket';
+import BrokerDesk from './pages/BrokerDesk';
+import VoyageCalculator from './pages/VoyageCalculator';
+import BunkerBargePerformance from './pages/BunkerBargePerformance';
 import Login from './pages/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -54,9 +58,9 @@ const Shell: React.FC = () => {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
       {showChrome && <Header />}
-      <div style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}>
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 80px)', height: 'calc(100vh - 80px)' }}>
         {showChrome && <Sidebar />}
-        <main style={{ flex: 1, padding: '24px', overflowY: 'auto', backgroundColor: 'var(--bg-primary)' }}>
+        <main style={{ flex: 1, padding: '24px', overflow: 'auto', backgroundColor: 'var(--bg-primary)', height: '100%' }}>
           <ErrorBoundary>
             <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
@@ -219,12 +223,46 @@ const Shell: React.FC = () => {
               </ProtectedRoute>
             </RequireAuth>
           } />
+          <Route path="/bunker-barge-performance" element={
+            <RequireAuth>
+              <ProtectedRoute requiredPermission={Permission.VIEW_FUEL_DATA}>
+                <BunkerBargePerformance />
+              </ProtectedRoute>
+            </RequireAuth>
+          } />
           
           {/* Insurance Routes */}
           <Route path="/insurance/quotes" element={
             <RequireAuth>
               <ProtectedRoute requiredPermission={Permission.VIEW_INSURANCE_QUOTES}>
                 <InsuranceQuotes />
+              </ProtectedRoute>
+            </RequireAuth>
+          } />
+          
+          {/* Charter Market Routes */}
+          <Route path="/charter-market" element={
+            <RequireAuth>
+              <ProtectedRoute requiredPermission={Permission.VIEW_CHARTER_MARKET}>
+                <CharterMarket />
+              </ProtectedRoute>
+            </RequireAuth>
+          } />
+          
+          {/* Broker Desk Routes */}
+          <Route path="/broker-desk" element={
+            <RequireAuth>
+              <ProtectedRoute requiredPermission={Permission.VIEW_CHARTER_MARKET}>
+                <BrokerDesk />
+              </ProtectedRoute>
+            </RequireAuth>
+          } />
+          
+          {/* Voyage Calculator */}
+          <Route path="/voyage-calculator" element={
+            <RequireAuth>
+              <ProtectedRoute requiredPermission={Permission.VIEW_VOYAGE_ESTIMATES}>
+                <VoyageCalculator />
               </ProtectedRoute>
             </RequireAuth>
           } />

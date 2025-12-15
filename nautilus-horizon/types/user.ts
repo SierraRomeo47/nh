@@ -18,7 +18,10 @@ export enum UserRole {
   FLEET_SUPERINTENDENT = 'FLEET_SUPERINTENDENT',
   // Specialized roles
   INSURER = 'INSURER',
-  MTO = 'MTO'  // Multimodal Transport Operator
+  MTO = 'MTO',  // Multimodal Transport Operator
+  // Charter market roles
+  CHARTERER = 'CHARTERER',  // Cargo owners seeking vessels
+  BROKER = 'BROKER'  // Ship brokers facilitating charter deals
 }
 
 export enum UserDepartment {
@@ -98,7 +101,21 @@ export enum Permission {
   COORDINATE_INTERMODAL_TRANSPORT = 'COORDINATE_INTERMODAL_TRANSPORT',
   MANAGE_DOCUMENTATION = 'MANAGE_DOCUMENTATION',
   TRACK_SHIPMENTS = 'TRACK_SHIPMENTS',
-  OPTIMIZE_ROUTES = 'OPTIMIZE_ROUTES'
+  OPTIMIZE_ROUTES = 'OPTIMIZE_ROUTES',
+  
+  // Charter and Broker Permissions
+  VIEW_CHARTER_MARKET = 'VIEW_CHARTER_MARKET',
+  CREATE_CHARTER_RFQ = 'CREATE_CHARTER_RFQ',
+  SUBMIT_BID = 'SUBMIT_BID',
+  ACCEPT_BID = 'ACCEPT_BID',
+  REJECT_BID = 'REJECT_BID',
+  COUNTER_OFFER = 'COUNTER_OFFER',
+  VIEW_VOYAGE_ESTIMATES = 'VIEW_VOYAGE_ESTIMATES',
+  CREATE_VOYAGE_ESTIMATES = 'CREATE_VOYAGE_ESTIMATES',
+  ACCESS_CHARTER_CHAT = 'ACCESS_CHARTER_CHAT',
+  MANAGE_FIXTURE = 'MANAGE_FIXTURE',
+  VIEW_TONNAGE_LIST = 'VIEW_TONNAGE_LIST',
+  MANAGE_VESSEL_POSITIONS = 'MANAGE_VESSEL_POSITIONS'
 }
 
 export interface UserProfile {
@@ -508,6 +525,48 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...Object.values(Permission)
   ],
   
+  [UserRole.CHARTERER]: [
+    // Charterer permissions - cargo owners seeking vessel space
+    Permission.VIEW_DASHBOARD,
+    Permission.VIEW_FINANCIAL_DATA,
+    Permission.VIEW_VOYAGES,
+    Permission.VIEW_CHARTER_MARKET,
+    Permission.CREATE_CHARTER_RFQ,
+    Permission.VIEW_VOYAGE_ESTIMATES,
+    Permission.ACCEPT_BID,
+    Permission.REJECT_BID,
+    Permission.COUNTER_OFFER,
+    Permission.ACCESS_CHARTER_CHAT,
+    Permission.MANAGE_FIXTURE,
+    Permission.VIEW_TONNAGE_LIST,
+    Permission.VIEW_SETTINGS,
+    Permission.EDIT_USER_PROFILE,
+    Permission.CUSTOMIZE_DASHBOARD
+  ],
+  
+  [UserRole.BROKER]: [
+    // Broker permissions - facilitating charter deals between owners and charterers
+    Permission.VIEW_DASHBOARD,
+    Permission.VIEW_FINANCIAL_DATA,
+    Permission.VIEW_FLEET_OVERVIEW,
+    Permission.VIEW_VOYAGES,
+    Permission.VIEW_CHARTER_MARKET,
+    Permission.CREATE_CHARTER_RFQ,
+    Permission.SUBMIT_BID,
+    Permission.VIEW_VOYAGE_ESTIMATES,
+    Permission.CREATE_VOYAGE_ESTIMATES,
+    Permission.ACCEPT_BID,
+    Permission.REJECT_BID,
+    Permission.COUNTER_OFFER,
+    Permission.ACCESS_CHARTER_CHAT,
+    Permission.MANAGE_FIXTURE,
+    Permission.VIEW_TONNAGE_LIST,
+    Permission.MANAGE_VESSEL_POSITIONS,
+    Permission.VIEW_SETTINGS,
+    Permission.EDIT_USER_PROFILE,
+    Permission.CUSTOMIZE_DASHBOARD
+  ],
+  
   [UserRole.GUEST]: [
     Permission.VIEW_DASHBOARD
   ]
@@ -753,6 +812,37 @@ export const DEFAULT_DASHBOARD_CONFIGS: Record<UserRole, Partial<DashboardConfig
       { id: 'compliance-status', type: WidgetType.COMPLIANCE_STATUS, title: 'Compliance Status', position: { x: 3, y: 0, w: 1, h: 1 }, config: {}, isVisible: true },
       { id: 'financial-summary', type: WidgetType.FINANCIAL_SUMMARY, title: 'Financial Summary', position: { x: 0, y: 1, w: 2, h: 1 }, config: {}, isVisible: true },
       { id: 'system-status', type: WidgetType.MAINTENANCE_ALERTS, title: 'System Status', position: { x: 3, y: 1, w: 1, h: 1 }, config: {}, isVisible: true }
+    ]
+  },
+  
+  [UserRole.CHARTERER]: {
+    layout: 'grid',
+    columns: 3,
+    showFinancialData: true,
+    showComplianceData: false,
+    showCrewData: false,
+    showTechnicalData: false,
+    widgets: [
+      { id: 'charter-market', type: WidgetType.RFQ_BOARD, title: 'Charter Market', position: { x: 0, y: 0, w: 2, h: 1 }, config: {}, isVisible: true },
+      { id: 'my-rfqs', type: WidgetType.MY_TASKS, title: 'My RFQs', position: { x: 2, y: 0, w: 1, h: 1 }, config: {}, isVisible: true },
+      { id: 'voyage-estimates', type: WidgetType.FINANCIAL_SUMMARY, title: 'Voyage Estimates', position: { x: 0, y: 1, w: 2, h: 1 }, config: {}, isVisible: true },
+      { id: 'market-data', type: WidgetType.MARKET_DATA, title: 'Market Data', position: { x: 2, y: 1, w: 1, h: 1 }, config: {}, isVisible: true }
+    ]
+  },
+  
+  [UserRole.BROKER]: {
+    layout: 'grid',
+    columns: 3,
+    showFinancialData: true,
+    showComplianceData: false,
+    showCrewData: false,
+    showTechnicalData: false,
+    widgets: [
+      { id: 'broker-desk', type: WidgetType.RFQ_BOARD, title: 'Broker Desk', position: { x: 0, y: 0, w: 2, h: 1 }, config: {}, isVisible: true },
+      { id: 'tonnage-list', type: WidgetType.FLEET_OVERVIEW, title: 'Available Tonnage', position: { x: 2, y: 0, w: 1, h: 1 }, config: {}, isVisible: true },
+      { id: 'active-negotiations', type: WidgetType.MY_TASKS, title: 'Active Negotiations', position: { x: 0, y: 1, w: 1, h: 1 }, config: {}, isVisible: true },
+      { id: 'voyage-calculator', type: WidgetType.FINANCIAL_SUMMARY, title: 'Voyage Calculator', position: { x: 1, y: 1, w: 1, h: 1 }, config: {}, isVisible: true },
+      { id: 'market-intelligence', type: WidgetType.MARKET_DATA, title: 'Market Intelligence', position: { x: 2, y: 1, w: 1, h: 1 }, config: {}, isVisible: true }
     ]
   },
   

@@ -40,6 +40,8 @@ export class VoyagesController {
                   'leg_number', vl.leg_number,
                   'departure_port', vl.departure_port,
                   'arrival_port', vl.arrival_port,
+                  'departure_port_unlocode', COALESCE(p_dep.unlocode, ''),
+                  'arrival_port_unlocode', COALESCE(p_arr.unlocode, ''),
                   'departure_date', vl.departure_date,
                   'arrival_date', vl.arrival_date,
                   'distance_nm', vl.distance_nm,
@@ -48,6 +50,16 @@ export class VoyagesController {
                 ) ORDER BY vl.leg_number
               )
               FROM voyage_legs vl
+              LEFT JOIN ports p_dep ON (
+                (TRIM(SPLIT_PART(vl.departure_port, ',', 1)) = p_dep.name 
+                  AND TRIM(SPLIT_PART(vl.departure_port, ',', 2)) = p_dep.country_code)
+                OR (vl.departure_port = p_dep.name AND POSITION(',' IN vl.departure_port) = 0)
+              )
+              LEFT JOIN ports p_arr ON (
+                (TRIM(SPLIT_PART(vl.arrival_port, ',', 1)) = p_arr.name 
+                  AND TRIM(SPLIT_PART(vl.arrival_port, ',', 2)) = p_arr.country_code)
+                OR (vl.arrival_port = p_arr.name AND POSITION(',' IN vl.arrival_port) = 0)
+              )
               WHERE vl.voyage_id = v.id
             ),
             '[]'
@@ -127,6 +139,8 @@ export class VoyagesController {
                   'leg_number', vl.leg_number,
                   'departure_port', vl.departure_port,
                   'arrival_port', vl.arrival_port,
+                  'departure_port_unlocode', COALESCE(p_dep.unlocode, ''),
+                  'arrival_port_unlocode', COALESCE(p_arr.unlocode, ''),
                   'departure_date', vl.departure_date,
                   'arrival_date', vl.arrival_date,
                   'distance_nm', vl.distance_nm,
@@ -135,6 +149,16 @@ export class VoyagesController {
                 ) ORDER BY vl.leg_number
               )
               FROM voyage_legs vl
+              LEFT JOIN ports p_dep ON (
+                (TRIM(SPLIT_PART(vl.departure_port, ',', 1)) = p_dep.name 
+                  AND TRIM(SPLIT_PART(vl.departure_port, ',', 2)) = p_dep.country_code)
+                OR (vl.departure_port = p_dep.name AND POSITION(',' IN vl.departure_port) = 0)
+              )
+              LEFT JOIN ports p_arr ON (
+                (TRIM(SPLIT_PART(vl.arrival_port, ',', 1)) = p_arr.name 
+                  AND TRIM(SPLIT_PART(vl.arrival_port, ',', 2)) = p_arr.country_code)
+                OR (vl.arrival_port = p_arr.name AND POSITION(',' IN vl.arrival_port) = 0)
+              )
               WHERE vl.voyage_id = v.id
             ),
             '[]'

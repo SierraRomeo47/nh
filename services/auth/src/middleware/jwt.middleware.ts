@@ -11,10 +11,15 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  // Try cookie first (K8s/production ready), then header (backward compatibility)
+  let token = (req as any).cookies?.accessToken;
+  
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  }
 
-  // Development mock bypass
+  // Development mock bypass for demo
   if (token === 'mock-token') {
     req.userId = '20000000-0000-0000-0000-000000000001';
     req.userRole = 'ADMIN';

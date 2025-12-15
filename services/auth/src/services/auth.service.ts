@@ -32,15 +32,19 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    // Get user permissions
-    const permissionsResult = await pool.query(
-      `SELECT p.code FROM permissions p
-       INNER JOIN user_permissions up ON p.id = up.permission_id
-       WHERE up.user_id = $1`,
-      [user.id]
-    );
-
-    const permissions = permissionsResult.rows.map((row: any) => row.code);
+    // Get user permissions (optional - if not set, use empty array)
+    let permissions: string[] = [];
+    try {
+      const permissionsResult = await pool.query(
+        `SELECT p.code FROM permissions p
+         INNER JOIN user_permissions up ON p.id = up.permission_id
+         WHERE up.user_id = $1`,
+        [user.id]
+      );
+      permissions = permissionsResult.rows.map((row: any) => row.code);
+    } catch (error) {
+      console.log('No permissions configured for user, using empty permissions');
+    }
 
     // Generate tokens
     const accessToken = jwt.sign(
@@ -48,6 +52,7 @@ export class AuthService {
         userId: user.id,
         email: user.email,
         role: user.role,
+        organizationId: user.organization_id,
         permissions: permissions
       },
       JWT_SECRET,
@@ -97,21 +102,26 @@ export class AuthService {
     const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
-    // Get permissions
-    const permissionsResult = await pool.query(
-      `SELECT p.code FROM permissions p
-       INNER JOIN user_permissions up ON p.id = up.permission_id
-       WHERE up.user_id = $1`,
-      [user.id]
-    );
-
-    const permissions = permissionsResult.rows.map((row: any) => row.code);
+    // Get permissions (optional)
+    let permissions: string[] = [];
+    try {
+      const permissionsResult = await pool.query(
+        `SELECT p.code FROM permissions p
+         INNER JOIN user_permissions up ON p.id = up.permission_id
+         WHERE up.user_id = $1`,
+        [user.id]
+      );
+      permissions = permissionsResult.rows.map((row: any) => row.code);
+    } catch (error) {
+      console.log('No permissions configured for user');
+    }
 
     const accessToken = jwt.sign(
       {
         userId: user.id,
         email: user.email,
         role: user.role,
+        organizationId: user.organization_id,
         permissions: permissions
       },
       JWT_SECRET,
@@ -134,28 +144,38 @@ export class AuthService {
 
     const user = result.rows[0];
 
-    // Get permissions
-    const permissionsResult = await pool.query(
-      `SELECT p.code FROM permissions p
-       INNER JOIN user_permissions up ON p.id = up.permission_id
-       WHERE up.user_id = $1`,
-      [userId]
-    );
+    // Get permissions (optional)
+    let permissions: string[] = [];
+    try {
+      const permissionsResult = await pool.query(
+        `SELECT p.code FROM permissions p
+         INNER JOIN user_permissions up ON p.id = up.permission_id
+         WHERE up.user_id = $1`,
+        [userId]
+      );
+      permissions = permissionsResult.rows.map((row: any) => row.code);
+    } catch (error) {
+      console.log('No permissions configured for user');
+    }
 
-    const permissions = permissionsResult.rows.map((row: any) => row.code);
-
-    // Get vessel assignments
-    const vesselsResult = await pool.query(
-      'SELECT ship_id, start_date, end_date FROM vessel_crew_assignments WHERE user_id = $1 AND is_active = true',
-      [userId]
-    );
+    // Get vessel assignments (optional)
+    let vessels: any[] = [];
+    try {
+      const vesselsResult = await pool.query(
+        'SELECT ship_id, start_date, end_date FROM vessel_crew_assignments WHERE user_id = $1 AND is_active = true',
+        [userId]
+      );
+      vessels = vesselsResult.rows;
+    } catch (error) {
+      console.log('No vessel assignments configured');
+    }
 
     const { password_hash, ...userWithoutPassword } = user;
 
     return {
       ...userWithoutPassword,
       permissions,
-      vessels: vesselsResult.rows
+      vessels
     };
   }
 }

@@ -16,7 +16,9 @@ const Header: React.FC = () => {
 
   const fetchEuaPrice = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/trading/api/market/eua`);
+      const response = await fetch(`${API_BASE_URL}/trading/api/market/eua`, {
+        credentials: 'include' // K8s-ready: Cookie-based auth
+      });
       if (response.ok) {
         const data = await response.json();
         setEuaPrice(parseFloat(data.data.price));

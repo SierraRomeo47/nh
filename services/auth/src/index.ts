@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes.express';
 import usersRoutes from './routes/users.routes';
 import userAssignmentsRoutes from './routes/user-assignments.routes';
@@ -10,13 +11,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// CORS configuration
+// CORS configuration with credentials support for cookies
 app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true,
+  credentials: true, // Required for cookies
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Cookie parser middleware (required for reading cookies)
+app.use(cookieParser());
 
 app.use(express.json());
 

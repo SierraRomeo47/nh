@@ -27,7 +27,13 @@ export interface Organization {
 export class VesselsService {
   async getAllVessels(userRole: string, userId: string, organizationId: string): Promise<Vessel[]> {
     let query = `
-      SELECT s.* FROM ships s
+      SELECT 
+        s.*,
+        f.name as fleet_name,
+        f.description as fleet_description
+      FROM ships s
+      LEFT JOIN fleet_vessels fv ON s.id = fv.ship_id
+      LEFT JOIN fleets f ON fv.fleet_id = f.id
       WHERE s.is_active = true
     `;
     
@@ -49,7 +55,7 @@ export class VesselsService {
       params.push(organizationId);
     }
     
-    query += ` ORDER BY s.name`;
+    query += ` ORDER BY f.name NULLS LAST, s.name`;
     
     const result = await pool.query(query, params);
     return result.rows;

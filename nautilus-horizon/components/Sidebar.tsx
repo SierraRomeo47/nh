@@ -85,7 +85,8 @@ const Sidebar: React.FC = () => {
         { to: '/scenario-pad', label: 'Scenario Pad', icon: '🧪' },
         { to: '/crew/tasks', label: 'Crew Management', icon: '👥' },
         { to: '/compliance-monitoring', label: 'Compliance', icon: '📋' },
-        { to: '/crew/league', label: 'Crew League', icon: '🏆' }
+        { to: '/crew/league', label: 'Crew League', icon: '🏆' },
+        { to: '/bunker-barge-performance', label: 'Bunker Barge Performance', icon: '⛴️' }
       ],
       [UserRole.COMPLIANCE_OFFICER]: [
         { to: '/compliance-monitoring', label: 'Compliance Monitoring', icon: '📋' },
@@ -107,7 +108,8 @@ const Sidebar: React.FC = () => {
         { to: '/waste-heat-recovery', label: 'Waste Heat Recovery', icon: '🔥' },
         { to: '/maintenance', label: 'Maintenance', icon: '🛠️' },
         { to: '/compliance-monitoring', label: 'Compliance', icon: '📋' },
-        { to: '/fuel-consumption', label: 'Fuel Consumption', icon: '📊' }
+        { to: '/fuel-consumption', label: 'Fuel Consumption', icon: '📊' },
+        { to: '/bunker-barge-performance', label: 'Bunker Barge Performance', icon: '⛴️' }
       ],
       [UserRole.OPERATIONS_SUPERINTENDENT]: [
         { to: '/fleet-management', label: 'Fleet Management', icon: '🚢' },
@@ -115,7 +117,8 @@ const Sidebar: React.FC = () => {
         { to: '/crew/tasks', label: 'Crew Management', icon: '👥' },
         { to: '/compliance-monitoring', label: 'Compliance', icon: '📋' },
         { to: '/fuel-consumption', label: 'Fuel Consumption', icon: '📊' },
-        { to: '/scenario-pad', label: 'Scenario Planning', icon: '🧪' }
+        { to: '/scenario-pad', label: 'Scenario Planning', icon: '🧪' },
+        { to: '/bunker-barge-performance', label: 'Bunker Barge Performance', icon: '⛴️' }
       ],
       [UserRole.PORT_CAPTAIN]: [
         { to: '/fleet-management', label: 'Fleet Management', icon: '🚢' },
@@ -148,6 +151,24 @@ const Sidebar: React.FC = () => {
         { to: '/fuel-consumption', label: 'Fuel Efficiency', icon: '📊' },
         { to: '/scenario-pad', label: 'Route Planning', icon: '🧪' }
       ],
+      [UserRole.CHARTERER]: [
+        { to: '/charter-market', label: 'Charter Market', icon: '⚓' },
+        { to: '/voyage-calculator', label: 'Voyage Calculator', icon: '🧮' },
+        { to: '/my-rfqs', label: 'My RFQs', icon: '📋' },
+        { to: '/voyage-estimates', label: 'Voyage Estimates', icon: '📊' },
+        { to: '/market-rates', label: 'Market Rates', icon: '💰' },
+        { to: '/fixtures', label: 'Fixtures', icon: '✅' },
+        { to: '/fleet-management', label: 'Available Tonnage', icon: '🚢' }
+      ],
+      [UserRole.BROKER]: [
+        { to: '/broker-desk', label: 'Broker Desk', icon: '💼' },
+        { to: '/charter-market', label: 'Charter Market', icon: '⚓' },
+        { to: '/voyage-calculator', label: 'Voyage Calculator', icon: '🧮' },
+        { to: '/my-bids', label: 'My Bids', icon: '📝' },
+        { to: '/tonnage-list', label: 'Tonnage List', icon: '🚢' },
+        { to: '/market-intelligence', label: 'Market Intelligence', icon: '📈' },
+        { to: '/fixtures', label: 'Fixtures', icon: '✅' }
+      ],
       [UserRole.ADMIN]: [
         { to: '/user-management', label: 'User Management', icon: '👤' },
         { to: '/system-settings', label: 'System Settings', icon: '⚙️' },
@@ -157,6 +178,7 @@ const Sidebar: React.FC = () => {
         { to: '/crew/league', label: 'Crew League', icon: '🏆' },
         { to: '/fuel-logging', label: 'Fuel Logging', icon: '⛽' },
         { to: '/fuel-consumption', label: 'Fuel Consumption', icon: '📊' },
+        { to: '/bunker-barge-performance', label: 'Bunker Barge Performance', icon: '⛴️' },
         { to: '/engine-status', label: 'Engine Status', icon: '🔧' },
         { to: '/waste-heat-recovery', label: 'Waste Heat Recovery', icon: '🔥' },
         { to: '/maintenance', label: 'Maintenance', icon: '🛠️' },
@@ -164,6 +186,9 @@ const Sidebar: React.FC = () => {
         { to: '/verification', label: 'Verification', icon: '✅' },
         { to: '/regulatory-deadlines', label: 'Regulatory Deadlines', icon: '⏰' },
         { to: '/insurance/quotes', label: 'Insurance Quotes', icon: '🛡️' },
+        { to: '/charter-market', label: 'Charter Market', icon: '⚓' },
+        { to: '/broker-desk', label: 'Broker Desk', icon: '💼' },
+        { to: '/voyage-calculator', label: 'Voyage Calculator', icon: '🧮' },
         { to: '/trading-opportunities', label: 'Trading Opportunities', icon: '💹' },
         { to: '/market-data', label: 'Market Data', icon: '📊' },
         { to: '/portfolio', label: 'Portfolio', icon: '💼' },
@@ -194,6 +219,8 @@ const Sidebar: React.FC = () => {
       case UserRole.FLEET_SUPERINTENDENT: return 'Fleet Superintendent';
       case UserRole.INSURER: return 'Maritime Insurer';
       case UserRole.MTO: return 'Multimodal Transport Operator';
+      case UserRole.CHARTERER: return 'Charterer';
+      case UserRole.BROKER: return 'Ship Broker';
       case UserRole.ADMIN: return 'System Administrator';
       default: return 'Marine Professional';
     }
@@ -260,7 +287,9 @@ const Sidebar: React.FC = () => {
         flexDirection: 'column', 
         gap: '4px', 
         flex: 1,
-        padding: '16px'
+        padding: '16px',
+        overflowY: 'auto',
+        overflowX: 'hidden'
       }}>
         {navigationItems.map((item) => (
           <NavLink 

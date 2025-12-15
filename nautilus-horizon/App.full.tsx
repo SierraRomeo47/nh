@@ -28,6 +28,7 @@ import Portfolio from './pages/Portfolio';
 import FleetManagement from './pages/FleetManagement';
 import UserManagement from './pages/UserManagement';
 import SystemSettings from './pages/SystemSettings';
+import BunkerBargePerformance from './pages/BunkerBargePerformance';
 
 const App: React.FC = () => {
   return (
@@ -63,6 +64,7 @@ const App: React.FC = () => {
                   <Route path="/portfolio" element={<Portfolio />} />
                   <Route path="/user-management" element={<UserManagement />} />
                   <Route path="/system-settings" element={<SystemSettings />} />
+                  <Route path="/bunker-barge-performance" element={<BunkerBargePerformance />} />
                 </Routes>
               </main>
             </div>

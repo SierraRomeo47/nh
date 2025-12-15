@@ -9,12 +9,91 @@ import {
   CoverageType,
   SafetyRating,
 } from '../services/insuranceService';
+import { masterDataService, Vessel } from '../services/masterDataService';
 
 const InsuranceQuotes: React.FC = () => {
   const [quotes, setQuotes] = useState<InsuranceQuote[]>([]);
   const [loading, setLoading] = useState(false);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<InsuranceQuote | null>(null);
+  const [vessels, setVessels] = useState<Vessel[]>([]);
+  const [loadingVessels, setLoadingVessels] = useState(false);
+  const [selectedVesselId, setSelectedVesselId] = useState<string>('');
+  
+  // Port selection state (from master ports database)
+  const [originPorts, setOriginPorts] = useState<any[]>([]);
+  const [destinationPorts, setDestinationPorts] = useState<any[]>([]);
+  const [originPortSearch, setOriginPortSearch] = useState('');
+  const [destinationPortSearch, setDestinationPortSearch] = useState('');
+  const [loadingPorts, setLoadingPorts] = useState(false);
+
+  // Load vessels from parent ships table on mount
+  useEffect(() => {
+    const loadVesselsFromMasterData = async () => {
+      setLoadingVessels(true);
+      try {
+        const vesselData = await masterDataService.getVessels();
+        setVessels(vesselData);
+      } catch (error) {
+        console.error('Error loading vessels from master data:', error);
+      } finally {
+        setLoadingVessels(false);
+      }
+    };
+    loadVesselsFromMasterData();
+  }, []);
+
+  // Search ports from parent ports database (with UN/LOCODE)
+  const searchOriginPorts = async (searchTerm: string) => {
+    if (searchTerm.length < 2) {
+      setOriginPorts([]);
+      return;
+    }
+    setLoadingPorts(true);
+    try {
+      const ports = await masterDataService.getPorts(searchTerm);
+      setOriginPorts(ports);
+    } catch (error) {
+      console.error('Error searching origin ports:', error);
+    } finally {
+      setLoadingPorts(false);
+    }
+  };
+
+  const searchDestinationPorts = async (searchTerm: string) => {
+    if (searchTerm.length < 2) {
+      setDestinationPorts([]);
+      return;
+    }
+    setLoadingPorts(true);
+    try {
+      const ports = await masterDataService.getPorts(searchTerm);
+      setDestinationPorts(ports);
+    } catch (error) {
+      console.error('Error searching destination ports:', error);
+    } finally {
+      setLoadingPorts(false);
+    }
+  };
+
+  // Debounced port search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (originPortSearch) {
+        searchOriginPorts(originPortSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [originPortSearch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (destinationPortSearch) {
+        searchDestinationPorts(destinationPortSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [destinationPortSearch]);
 
   // Form state
   const [quoteRequest, setQuoteRequest] = useState<InsuranceQuoteRequest>({
@@ -35,6 +114,45 @@ const InsuranceQuotes: React.FC = () => {
     complianceScore: 85,
     requestDate: new Date(),
   });
+
+  // Handle vessel selection from master data
+  const handleVesselSelect = (vesselId: string) => {
+    setSelectedVesselId(vesselId);
+    const vessel = vessels.find(v => v.vessel_id === vesselId);
+    
+    if (vessel) {
+      // Auto-populate form fields from parent ships table data
+      setQuoteRequest({
+        ...quoteRequest,
+        vesselId: vessel.vessel_id,
+        vesselName: vessel.vessel_name,
+        vesselType: mapVesselTypeToInsuranceType(vessel.vessel_type),
+        vesselAge: vessel.vessel_age || 5,
+        grossTonnage: vessel.gt || vessel.dwt || 50000,
+        safetyRating: vessel.safety_rating as SafetyRating || SafetyRating.GOOD,
+      });
+    }
+  };
+
+  // Map vessel types from parent table to insurance enum
+  const mapVesselTypeToInsuranceType = (shipType: string): VesselType => {
+    const typeMap: Record<string, VesselType> = {
+      'Bulk Carrier': VesselType.BULK_CARRIER,
+      'BULK_CARRIER': VesselType.BULK_CARRIER,
+      'Container Ship': VesselType.CONTAINER,
+      'CONTAINER': VesselType.CONTAINER,
+      'MR Tanker': VesselType.TANKER,
+      'Tanker': VesselType.TANKER,
+      'TANKER_CRUDE': VesselType.TANKER,
+      'TANKER_PRODUCT': VesselType.TANKER,
+      'Aframax Tanker': VesselType.TANKER,
+      'Suezmax Tanker': VesselType.TANKER,
+      'VLCC': VesselType.TANKER,
+      'LNG Carrier': VesselType.LNG_CARRIER,
+      'LNG_CARRIER': VesselType.LNG_CARRIER,
+    };
+    return typeMap[shipType] || VesselType.GENERAL_CARGO;
+  };
 
   const handleGenerateQuote = async () => {
     setLoading(true);
@@ -186,92 +304,204 @@ const InsuranceQuotes: React.FC = () => {
                 </div>
 
                 <div className="space-y-6">
+                  {/* Vessel Selection from Master Data */}
+                  <div>
+                    <h3 className="text-lg font-medium text-[var(--text-primary)] mb-4">
+                      Vessel Selection
+                    </h3>
+                    <div className="grid grid-cols-1 gap-4 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                          Select Vessel from Fleet (Auto-populates form)
+                        </label>
+                        <select
+                          value={selectedVesselId}
+                          onChange={(e) => handleVesselSelect(e.target.value)}
+                          className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
+                          disabled={loadingVessels}
+                        >
+                          <option value="">-- Select from {vessels.length} vessels in master database --</option>
+                          {vessels.map(vessel => (
+                            <option key={vessel.vessel_id} value={vessel.vessel_id}>
+                              {vessel.vessel_name} ({vessel.imo_number}) - {vessel.vessel_type} - {vessel.vessel_age}y
+                            </option>
+                          ))}
+                        </select>
+                        <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                          <p className="text-sm text-[var(--text-secondary)] mb-2">
+                            Can't find your vessel in the fleet database?
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Clear selection and allow manual entry
+                              setSelectedVesselId('');
+                              setQuoteRequest({
+                                ...quoteRequest,
+                                vesselName: '',
+                                vesselId: '',
+                                vesselType: VesselType.CONTAINER,
+                                vesselAge: 5,
+                                grossTonnage: 50000
+                              });
+                            }}
+                            className="w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                          >
+                            <span>➕</span>
+                            <span>Add New Vessel to Database</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Vessel Information */}
                   <div>
                     <h3 className="text-lg font-medium text-[var(--text-primary)] mb-4">
-                      Vessel Information
+                      Vessel Information {selectedVesselId && '(From Master Database)'}
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                          Vessel Name
+                          Vessel Name {selectedVesselId && '✓'}
                         </label>
                         <input
                           type="text"
                           value={quoteRequest.vesselName}
                           onChange={(e) => setQuoteRequest({...quoteRequest, vesselName: e.target.value})}
                           className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
-                          placeholder="Enter vessel name"
+                          placeholder="Enter vessel name or select above"
+                          readOnly={!!selectedVesselId}
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                          Vessel Type
+                          Vessel Type {selectedVesselId && '✓'}
                         </label>
                         <select
                           value={quoteRequest.vesselType}
                           onChange={(e) => setQuoteRequest({...quoteRequest, vesselType: e.target.value as VesselType})}
                           className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
+                          disabled={!!selectedVesselId}
                         >
                           {Object.values(VesselType).map(type => (
                             <option key={type} value={type}>{type}</option>
                           ))}
                         </select>
+                        {selectedVesselId && (
+                          <p className="text-xs text-green-400 mt-1">From master ships table</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                          Vessel Age (years)
+                          Vessel Age (years) {selectedVesselId && '✓'}
                         </label>
                         <input
                           type="number"
                           value={quoteRequest.vesselAge}
                           onChange={(e) => setQuoteRequest({...quoteRequest, vesselAge: parseInt(e.target.value)})}
                           className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
+                          readOnly={!!selectedVesselId}
                         />
+                        {selectedVesselId && (
+                          <p className="text-xs text-green-400 mt-1">Auto-calculated from master data</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                          Gross Tonnage (GT)
+                          Gross Tonnage (GT) {selectedVesselId && '✓'}
                         </label>
                         <input
                           type="number"
                           value={quoteRequest.grossTonnage}
                           onChange={(e) => setQuoteRequest({...quoteRequest, grossTonnage: parseInt(e.target.value)})}
                           className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
+                          readOnly={!!selectedVesselId}
                         />
+                        {selectedVesselId && (
+                          <p className="text-xs text-green-400 mt-1">From master ships table</p>
+                        )}
                       </div>
                     </div>
                   </div>
 
                   {/* Route Information */}
                   <div>
-                    <h3 className="text-lg font-medium text-[var(--text-primary)] mb-4">
-                      Route & Voyage Details
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
+                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-4">
+                    Route & Voyage Details
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                      <div className="relative">
                         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                           Origin Port
                         </label>
                         <input
                           type="text"
-                          value={quoteRequest.routeOrigin}
-                          onChange={(e) => setQuoteRequest({...quoteRequest, routeOrigin: e.target.value})}
+                          value={originPortSearch || quoteRequest.routeOrigin}
+                          onChange={(e) => {
+                            setOriginPortSearch(e.target.value);
+                            setQuoteRequest({...quoteRequest, routeOrigin: e.target.value});
+                          }}
                           className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
-                          placeholder="e.g., Singapore"
+                          placeholder="Type to search ports (e.g., Singapore)"
                         />
+                        {originPorts.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            {originPorts.map(port => (
+                              <button
+                                key={port.value}
+                                type="button"
+                                onClick={() => {
+                                  setQuoteRequest({...quoteRequest, routeOrigin: port.label});
+                                  setOriginPortSearch(port.label);
+                                  setOriginPorts([]);
+                                }}
+                                className="w-full px-4 py-2 text-left hover:bg-[var(--bg-primary)] text-[var(--text-primary)] border-b border-[var(--border-color)] last:border-b-0"
+                              >
+                                <div className="font-medium">{port.label}</div>
+                                <div className="text-xs text-[var(--text-muted)]">
+                                  {port.country} {port.port_code && `• ${port.port_code}`} • {parseFloat(port.latitude || 0).toFixed(2)}°, {parseFloat(port.longitude || 0).toFixed(2)}°
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div>
+                      <div className="relative">
                         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                           Destination Port
                         </label>
                         <input
                           type="text"
-                          value={quoteRequest.routeDestination}
-                          onChange={(e) => setQuoteRequest({...quoteRequest, routeDestination: e.target.value})}
+                          value={destinationPortSearch || quoteRequest.routeDestination}
+                          onChange={(e) => {
+                            setDestinationPortSearch(e.target.value);
+                            setQuoteRequest({...quoteRequest, routeDestination: e.target.value});
+                          }}
                           className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
-                          placeholder="e.g., Rotterdam"
+                          placeholder="Type to search ports (e.g., Rotterdam)"
                         />
+                        {destinationPorts.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            {destinationPorts.map(port => (
+                              <button
+                                key={port.value}
+                                type="button"
+                                onClick={() => {
+                                  setQuoteRequest({...quoteRequest, routeDestination: port.label});
+                                  setDestinationPortSearch(port.label);
+                                  setDestinationPorts([]);
+                                }}
+                                className="w-full px-4 py-2 text-left hover:bg-[var(--bg-primary)] text-[var(--text-primary)] border-b border-[var(--border-color)] last:border-b-0"
+                              >
+                                <div className="font-medium">{port.label}</div>
+                                <div className="text-xs text-[var(--text-muted)]">
+                                  {port.country} {port.port_code && `• ${port.port_code}`} • {parseFloat(port.latitude || 0).toFixed(2)}°, {parseFloat(port.longitude || 0).toFixed(2)}°
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">

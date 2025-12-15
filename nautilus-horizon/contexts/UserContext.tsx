@@ -20,7 +20,10 @@ export enum UserRole {
   FLEET_SUPERINTENDENT = 'FLEET_SUPERINTENDENT',
   // Specialized roles
   INSURER = 'INSURER',
-  MTO = 'MTO'
+  MTO = 'MTO',
+  // Charter market roles
+  CHARTERER = 'CHARTERER',
+  BROKER = 'BROKER'
 }
 
 export enum UserRank {
@@ -348,6 +351,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             updatedAt: new Date(),
           };
           setUser(base);
+          // Ensure demo token is set for backend API calls
+          if (!localStorage.getItem('accessToken')) {
+            localStorage.setItem('accessToken', 'mock-token');
+          }
           // Apply saved theme
           if (base.preferences?.theme) {
             applyTheme(base.preferences.theme);
@@ -363,6 +370,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const isLoginRoute = typeof window !== 'undefined' && window.location && window.location.hash.endsWith('/login');
     if (!isLoginRoute && storedUserRole && demoUsers[storedUserRole]) {
       setUser(demoUsers[storedUserRole]);
+      // Ensure demo token is set for backend API calls
+      if (!localStorage.getItem('accessToken')) {
+        localStorage.setItem('accessToken', 'mock-token');
+      }
     } else {
       // No default user; require login
       setUser(null);
@@ -370,31 +381,85 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    return new Promise<void>((resolve, reject) => {
-      setTimeout(() => {
-        const foundUser = Object.values(demoUsers).find(u => u.email === email);
-        if (foundUser && password === 'password') {
-          setUser(foundUser);
-          localStorage.setItem('currentUserRole', foundUser.role);
-          resolve();
-        } else {
-          reject(new Error('Invalid credentials'));
-        }
-      }, 500);
-    });
+    try {
+      // Call backend auth service with credentials to enable cookie handling
+      const response = await fetch('http://localhost:8080/auth/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // CRITICAL: Enable cookies for K8s/production deployment
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Invalid credentials' }));
+        throw new Error(errorData.message || 'Invalid credentials');
+      }
+
+      const data = await response.json();
+      
+      // Note: JWT tokens are now in HTTP-only cookies (secure, K8s ready)
+      // No localStorage usage for tokens in production
+
+      // Map backend user to frontend user format
+      const backendUser = data.data?.user;
+      if (backendUser) {
+        const mappedUser: User = {
+          id: backendUser.id,
+          email: backendUser.email,
+          firstName: backendUser.first_name,
+          lastName: backendUser.last_name,
+          role: backendUser.role as UserRole,
+          organizationId: backendUser.organization_id || 'org-1',
+          shipId: backendUser.ship_id,
+          rank: backendUser.rank as UserRank,
+          position: backendUser.position as UserPosition,
+          isActive: backendUser.is_active,
+          createdAt: new Date(backendUser.created_at),
+          updatedAt: new Date(backendUser.updated_at || backendUser.created_at),
+        };
+        setUser(mappedUser);
+        localStorage.setItem('currentUserRole', mappedUser.role);
+        localStorage.setItem('currentUserIdentity', JSON.stringify(mappedUser));
+        // Set a flag to indicate backend authentication is active
+        localStorage.setItem('backendAuth', 'true');
+      } else {
+        throw new Error('No user data returned from server');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('currentUserRole');
-    localStorage.removeItem('currentUserIdentity');
+  const logout = async () => {
+    try {
+      // Call backend to clear session and cookies
+      await fetch('http://localhost:8080/auth/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // Include cookies for proper logout
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local state
+      setUser(null);
+      localStorage.removeItem('currentUserRole');
+      localStorage.removeItem('currentUserIdentity');
+      localStorage.removeItem('accessToken'); // Clear demo token
+    }
   };
 
   const switchUserRole = (role: UserRole) => {
     if (demoUsers[role]) {
       setUser(demoUsers[role]);
       localStorage.setItem('currentUserRole', role);
+      // Store demo token for backend API calls
+      localStorage.setItem('accessToken', 'mock-token');
       // also clear identity to avoid stale overrides
       localStorage.removeItem('currentUserIdentity');
     } else {
@@ -423,6 +488,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(identity);
     localStorage.setItem('currentUserIdentity', JSON.stringify(identity));
     localStorage.setItem('currentUserRole', identity.role);
+    // Store demo token for backend API calls
+    localStorage.setItem('accessToken', 'mock-token');
   };
 
   const updatePreferences = (preferences: Partial<User['preferences']>) => {

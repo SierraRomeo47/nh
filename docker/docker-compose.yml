@@ -14,6 +14,8 @@ services:
       - compliance
       - compliance-ledger
       - trading
+      - insurance
+      - master-data
   auth:
     build:
       context: ../services/auth
@@ -126,6 +128,44 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO", "-", "http://localhost:3005/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+  insurance:
+    build:
+      context: ../services/insurance
+      dockerfile: Dockerfile
+    container_name: nh_insurance
+    environment:
+      - NODE_ENV=development
+      - PORT=3007
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    expose:
+      - "3007"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "-", "http://localhost:3007/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+  master-data:
+    build:
+      context: ../services/master-data
+      dockerfile: Dockerfile
+    container_name: nh_master_data
+    environment:
+      - NODE_ENV=development
+      - PORT=3008
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    expose:
+      - "3008"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "-", "http://localhost:3008/health"]
       interval: 10s
       timeout: 3s
       retries: 10

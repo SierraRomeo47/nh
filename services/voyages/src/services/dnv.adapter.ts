@@ -1,7 +1,10 @@
 // DNV OVDLA Adapter Service
 // Converts DNV JSON format to internal database schema
+// Enhanced for OVD 3.10.1 Excel file support
 
 import { DNVOVDLARecord, DNVOVDLARequest, DNVFieldMapping } from '../types/dnv.types';
+import * as XLSX from 'xlsx';
+import fs from 'fs';
 
 export class DNVAdapter {
   /**
@@ -174,6 +177,190 @@ export class DNVAdapter {
     if (request.data.interfaceCode !== 'OVDLA') {
       errors.push('Invalid interfaceCode. Expected OVDLA');
     }
+    
+    return {
+      valid: errors.length === 0,
+      errors
+    };
+  }
+  
+  /**
+   * Parse OVD Excel file and convert to DNV records
+   * @param filePath Path to the uploaded Excel file
+   * @returns Array of DNV OVDLA records
+   */
+  static parseOVDExcelFile(filePath: string): { records: DNVOVDLARecord[]; metadata: any } {
+    try {
+      // Read the Excel file
+      const workbook = XLSX.readFile(filePath);
+      
+      // Get the first sheet (assuming OVD data is in the first sheet)
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      
+      // Convert sheet to JSON with header row
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: null });
+      
+      // Map Excel rows to DNV records
+      const records: DNVOVDLARecord[] = jsonData.map((row: any) => {
+        return this.mapExcelRowToDNVRecord(row);
+      });
+      
+      // Extract metadata
+      const metadata = {
+        fileName: filePath.split('/').pop(),
+        sheetName,
+        recordCount: records.length,
+        dateRange: this.extractDateRange(records),
+        vessels: this.extractUniqueVessels(records)
+      };
+      
+      return { records, metadata };
+    } catch (error: any) {
+      throw new Error(`Failed to parse OVD Excel file: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Generate OVD Excel file from fuel consumption data
+   * @param fuelConsumptionData Array of fuel consumption records
+   * @returns Excel file buffer
+   */
+  static generateOVDExcelFile(fuelConsumptionData: any[]): Buffer {
+    try {
+      // Generate the data rows
+      const rows = this.generateOVDLAFormat(fuelConsumptionData);
+      
+      // Create a new workbook
+      const workbook = XLSX.utils.book_new();
+      
+      // Convert data to worksheet
+      const worksheet = XLSX.utils.aoa_to_sheet(rows);
+      
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'OVD Data');
+      
+      // Generate buffer
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      
+      return buffer;
+    } catch (error: any) {
+      throw new Error(`Failed to generate OVD Excel file: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Map Excel row to DNV record (handles different column naming conventions)
+   */
+  private static mapExcelRowToDNVRecord(row: any): DNVOVDLARecord {
+    const record: DNVOVDLARecord = {};
+    
+    // Map all possible field names (case-insensitive)
+    const fieldMappings: { [key: string]: keyof DNVOVDLARecord } = {
+      'date_utc': 'Date_UTC',
+      'date utc': 'Date_UTC',
+      'date': 'Date_UTC',
+      'time_utc': 'Time_UTC',
+      'time utc': 'Time_UTC',
+      'time': 'Time_UTC',
+      'imo': 'IMO',
+      'imo number': 'IMO',
+      'event': 'Event',
+      'voyage_from': 'Voyage_From',
+      'voyage from': 'Voyage_From',
+      'voyage_to': 'Voyage_To',
+      'voyage to': 'Voyage_To',
+      'voyage_number': 'Voyage_Number',
+      'voyage number': 'Voyage_Number',
+      'voyage_leg': 'Voyage_Leg',
+      'voyage leg': 'Voyage_Leg',
+      'me_consumption_hfo': 'ME_Consumption_HFO',
+      'me consumption hfo': 'ME_Consumption_HFO',
+      'me_consumption_mgo': 'ME_Consumption_MGO',
+      'me consumption mgo': 'ME_Consumption_MGO',
+      'me_consumption_lng': 'ME_Consumption_LNG',
+      'me consumption lng': 'ME_Consumption_LNG',
+      'ae_consumption_mgo': 'AE_Consumption_MGO',
+      'ae consumption mgo': 'AE_Consumption_MGO',
+      'boiler_consumption_hfo': 'Boiler_Consumption_HFO',
+      'boiler consumption hfo': 'Boiler_Consumption_HFO',
+      'shore_side_electricity_reception': 'Shore_Side_Electricity_Reception',
+      'shore side electricity reception': 'Shore_Side_Electricity_Reception'
+      // Add more mappings as needed for all 157+ fields
+    };
+    
+    // Map each field from the row
+    Object.keys(row).forEach(key => {
+      const normalizedKey = key.toLowerCase().trim();
+      const mappedKey = fieldMappings[normalizedKey];
+      
+      if (mappedKey) {
+        record[mappedKey] = row[key];
+      } else {
+        // Try direct mapping if key matches
+        const directKey = key.replace(/ /g, '_') as keyof DNVOVDLARecord;
+        if (directKey in record || true) { // Allow any field
+          (record as any)[directKey] = row[key];
+        }
+      }
+    });
+    
+    return record;
+  }
+  
+  /**
+   * Extract date range from records
+   */
+  private static extractDateRange(records: DNVOVDLARecord[]): { start: string | null; end: string | null } {
+    const dates = records
+      .map(r => r.Date_UTC)
+      .filter(d => d != null)
+      .sort();
+    
+    return {
+      start: dates.length > 0 ? dates[0]! : null,
+      end: dates.length > 0 ? dates[dates.length - 1]! : null
+    };
+  }
+  
+  /**
+   * Extract unique vessels from records
+   */
+  private static extractUniqueVessels(records: DNVOVDLARecord[]): string[] {
+    const vessels = new Set<string>();
+    records.forEach(r => {
+      if (r.IMO) {
+        vessels.add(r.IMO);
+      }
+    });
+    return Array.from(vessels);
+  }
+  
+  /**
+   * Validate OVD 3.10.1 format
+   */
+  static validateOVD310Format(data: any): { valid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    
+    if (!Array.isArray(data)) {
+      errors.push('Data must be an array');
+      return { valid: false, errors };
+    }
+    
+    if (data.length === 0) {
+      errors.push('Data array is empty');
+      return { valid: false, errors };
+    }
+    
+    // Check for required fields
+    const requiredFields = ['Date_UTC', 'IMO'];
+    data.forEach((record, index) => {
+      requiredFields.forEach(field => {
+        if (!record[field]) {
+          errors.push(`Record ${index + 1}: Missing required field '${field}'`);
+        }
+      });
+    });
     
     return {
       valid: errors.length === 0,

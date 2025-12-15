@@ -170,6 +170,12 @@ const RoleBasedSidebar: React.FC = () => {
             icon: () => <span className="h-5 w-5 mr-3 text-center">📋</span>,
             label: 'Crew Management',
             permission: Permission.VIEW_CREW_TASKS
+          },
+          {
+            to: '/bunker-barge-performance',
+            icon: () => <span className="h-5 w-5 mr-3 text-center">⛴️</span>,
+            label: 'Bunker Barge Performance',
+            permission: Permission.VIEW_FUEL_DATA
           }
         ];
 
@@ -345,6 +351,12 @@ const RoleBasedSidebar: React.FC = () => {
             icon: BeakerIcon,
             label: 'Fuel Consumption',
             permission: Permission.VIEW_FUEL_DATA
+          },
+          {
+            to: '/bunker-barge-performance',
+            icon: () => <span className="h-5 w-5 mr-3 text-center">⛴️</span>,
+            label: 'Bunker Barge Performance',
+            permission: Permission.VIEW_FUEL_DATA
           }
         ];
 
@@ -386,6 +398,12 @@ const RoleBasedSidebar: React.FC = () => {
             icon: BeakerIcon,
             label: 'Scenario Planning',
             permission: Permission.VIEW_FINANCIAL_DATA
+          },
+          {
+            to: '/bunker-barge-performance',
+            icon: () => <span className="h-5 w-5 mr-3 text-center">⛴️</span>,
+            label: 'Bunker Barge Performance',
+            permission: Permission.VIEW_FUEL_DATA
           }
         ];
 
@@ -420,6 +438,12 @@ const RoleBasedSidebar: React.FC = () => {
             to: '/fuel-consumption',
             icon: BeakerIcon,
             label: 'Fuel Consumption',
+            permission: Permission.VIEW_FUEL_DATA
+          },
+          {
+            to: '/bunker-barge-performance',
+            icon: () => <span className="h-5 w-5 mr-3 text-center">⛴️</span>,
+            label: 'Bunker Barge Performance',
             permission: Permission.VIEW_FUEL_DATA
           }
         ];
@@ -461,6 +485,12 @@ const RoleBasedSidebar: React.FC = () => {
             to: '/fuel-consumption',
             icon: BeakerIcon,
             label: 'Fuel Consumption',
+            permission: Permission.VIEW_FUEL_DATA
+          },
+          {
+            to: '/bunker-barge-performance',
+            icon: () => <span className="h-5 w-5 mr-3 text-center">⛴️</span>,
+            label: 'Bunker Barge Performance',
             permission: Permission.VIEW_FUEL_DATA
           },
           {
@@ -526,6 +556,12 @@ const RoleBasedSidebar: React.FC = () => {
             to: '/fuel-consumption',
             icon: () => <span className="h-5 w-5 mr-3 text-center">📊</span>,
             label: 'Fuel Consumption',
+            permission: Permission.VIEW_FUEL_DATA
+          },
+          {
+            to: '/bunker-barge-performance',
+            icon: () => <span className="h-5 w-5 mr-3 text-center">⛴️</span>,
+            label: 'Bunker Barge Performance',
             permission: Permission.VIEW_FUEL_DATA
           },
           {

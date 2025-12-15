@@ -2,9 +2,11 @@
  * Maritime Insurance Service
  * Provides insurance quote calculations based on real maritime risk factors
  * 
- * This service simulates an open-source insurance rates provider API
+ * This service connects to the backend insurance service API
  * that calculates premiums based on standard maritime insurance underwriting criteria
  */
+
+const API_BASE_URL = 'http://localhost:8080/insurance';
 
 export interface InsuranceQuoteRequest {
   vesselId?: string;
@@ -140,45 +142,31 @@ class InsuranceService {
    * Generate insurance quote based on request parameters
    */
   async generateQuote(request: InsuranceQuoteRequest): Promise<InsuranceQuote> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch(`${API_BASE_URL}/quotes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
 
-    const quoteId = this.generateQuoteId();
-    const requestDate = request.requestDate || new Date();
-    const expiryDate = new Date(requestDate);
-    expiryDate.setDate(expiryDate.getDate() + 30); // Quote valid for 30 days
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
 
-    // Calculate risk assessment
-    const riskAssessment = this.calculateRiskAssessment(request);
+      const data = await response.json();
+      
+      if (!data.success || !data.quote) {
+        throw new Error(data.error || 'Failed to generate quote');
+      }
 
-    // Calculate coverage premiums
-    const coverageBreakdown = this.calculateCoverages(request, riskAssessment);
-
-    // Calculate total premium
-    const totalPremium = coverageBreakdown.reduce((sum, c) => sum + c.premium, 0);
-
-    const quote: InsuranceQuote = {
-      quoteId,
-      requestDate,
-      expiryDate,
-      vessel: {
-        id: request.vesselId,
-        name: request.vesselName || 'Unnamed Vessel',
-        type: request.vesselType,
-        age: request.vesselAge,
-        tonnage: request.grossTonnage,
-      },
-      coverage: coverageBreakdown,
-      totalPremium,
-      deductible: request.deductible,
-      riskAssessment,
-      termsAndConditions: this.getTermsAndConditions(request.coverageType),
-      validUntil: expiryDate,
-      underwriter: 'Nautilus Marine Insurance Ltd.',
-      status: 'QUOTED',
-    };
-
-    return quote;
+      return data.quote;
+    } catch (error) {
+      console.error('Error generating quote:', error);
+      throw error;
+    }
   }
 
   /**
@@ -440,26 +428,47 @@ class InsuranceService {
    * Get insurance history for a vessel
    */
   async getInsuranceHistory(vesselId: string): Promise<InsuranceQuote[]> {
-    // Simulate API call - in production, this would fetch from database
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mock data - return empty for now
-    return [];
+    try {
+      const response = await fetch(`${API_BASE_URL}/vessels/${vesselId}/quotes`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.quotes || [];
+    } catch (error) {
+      console.error('Error fetching insurance history:', error);
+      return [];
+    }
   }
 
   /**
    * Accept/Bind insurance quote
    */
   async acceptQuote(quoteId: string): Promise<{ success: boolean; policyNumber?: string; message: string }> {
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      const response = await fetch(`${API_BASE_URL}/quotes/${quoteId}/accept`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    const policyNumber = `MIP-${Date.now().toString(36).toUpperCase()}`;
-    
-    return {
-      success: true,
-      policyNumber,
-      message: `Insurance policy ${policyNumber} has been issued successfully`,
-    };
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      console.error('Error accepting quote:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to accept quote',
+      };
+    }
   }
 }
 

@@ -1016,9 +1016,11 @@ export async function getEnvironmentalImpact(shipId: string) {
 
 export async function fetchVoyages(shipId?: string) {
   try {
-    // Call the voyages service backend API
-    const response = await fetch('http://localhost:8080/voyages/api/voyages', {
+    // Call the voyages service backend API with credentials for cookie-based auth
+    const response = await fetch('http://localhost:8080/voyages/api/voyages?limit=200', {
+      credentials: 'include', // K8s-ready: Use cookies, not localStorage
       headers: {
+        // Fallback to mock-token for demo mode (development only)
         'Authorization': `Bearer ${localStorage.getItem('accessToken') || 'mock-token'}`
       }
     });
@@ -1035,13 +1037,21 @@ export async function fetchVoyages(shipId?: string) {
     
     // Map backend data to frontend format
     const mappedVoyages = voyages.map((voyage: any) => {
-      // Extract legs from backend - handle both nested legs array and separate voyage_legs
-      let legsArray: string[] = [];
+      // Extract legs from backend - preserve UN/LOCODE data from master database
+      let legsArray: any[] = [];
       if (voyage.legs && Array.isArray(voyage.legs)) {
         legsArray = voyage.legs.map((leg: any) => {
           if (typeof leg === 'string') return leg;
+          // Return leg object with UN/LOCODE from backend
           if (leg.departure_port && leg.arrival_port) {
-            return `${leg.departure_port} → ${leg.arrival_port}`;
+            return {
+              departure_port: leg.departure_port,
+              arrival_port: leg.arrival_port,
+              departure_port_unlocode: leg.departure_port_unlocode || '',
+              arrival_port_unlocode: leg.arrival_port_unlocode || '',
+              distance_nm: leg.distance_nm,
+              cargo_type: leg.cargo_type
+            };
           }
           return null;
         }).filter(Boolean);
@@ -1050,10 +1060,22 @@ export async function fetchVoyages(shipId?: string) {
         const sortedLegs = [...voyage.voyage_legs].sort((a: any, b: any) => 
           (a.leg_number || 0) - (b.leg_number || 0)
         );
-        legsArray = sortedLegs.map((leg: any) => `${leg.departure_port} → ${leg.arrival_port}`);
+        legsArray = sortedLegs.map((leg: any) => ({
+          departure_port: leg.departure_port,
+          arrival_port: leg.arrival_port,
+          departure_port_unlocode: leg.departure_port_unlocode || '',
+          arrival_port_unlocode: leg.arrival_port_unlocode || '',
+          distance_nm: leg.distance_nm,
+          cargo_type: leg.cargo_type
+        }));
       } else if (voyage.start_port && voyage.end_port) {
         // Fallback: create single leg from start/end ports
-        legsArray = [`${voyage.start_port} → ${voyage.end_port}`];
+        legsArray = [{
+          departure_port: voyage.start_port,
+          arrival_port: voyage.end_port,
+          departure_port_unlocode: '',
+          arrival_port_unlocode: ''
+        }];
       }
       
       return {
@@ -1093,6 +1115,7 @@ export async function fetchVoyages(shipId?: string) {
     let vesselsMap: Map<string, any> = new Map();
     try {
       const vesselsResp = await fetch('http://localhost:8080/vessels/api/vessels', {
+        credentials: 'include', // K8s-ready: Use cookies
         headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken') || 'mock-token'}` }
       });
       const vesselsJson = await vesselsResp.json();
@@ -1148,27 +1171,38 @@ export async function fetchVoyages(shipId?: string) {
     };
 
     // Helper: Calculate distance from legs or ports
-    const calcDistanceNm = (legs: string[], origin?: string, destination?: string): number => {
+    const calcDistanceNm = (legs: any[], origin?: string, destination?: string): number => {
       if (legs && legs.length > 0) {
         // Estimate from legs: Rotterdam-Singapore route is ~8700nm total
         // Each leg varies: Rotterdam→Suez ~3200nm, Suez→Singapore ~5400nm
         let total = 0;
         for (const leg of legs) {
-          const parts = leg.split(' → ');
-          if (parts.length === 2) {
-            const key = `${parts[0]}-${parts[1]}`;
-            const reverseKey = `${parts[1]}-${parts[0]}`;
-            if (ROUTE_DISTANCES[key]) total += ROUTE_DISTANCES[key];
-            else if (ROUTE_DISTANCES[reverseKey]) total += ROUTE_DISTANCES[reverseKey];
-            else {
-              // Estimate: EU to Suez ~3000nm, Suez to Asia ~5000nm, EU to EU ~500nm
-              const startEU = EU_PORTS.has(parts[0]);
-              const endEU = EU_PORTS.has(parts[1]);
-              if (startEU && endEU) total += 500;
-              else if ((startEU || endEU) && (parts[0].includes('Suez') || parts[1].includes('Suez'))) total += 3000;
-              else if (parts[0].includes('Suez') || parts[1].includes('Suez')) total += 5000;
-              else total += 2000; // default intercontinental
-            }
+          // Handle leg objects (new format) or strings (old format)
+          let depPort: string, arrPort: string;
+          if (typeof leg === 'string') {
+            const parts = leg.split(' → ');
+            if (parts.length !== 2) continue;
+            [depPort, arrPort] = parts;
+          } else if (leg.departure_port && leg.arrival_port) {
+            // Extract port name without country code for lookup
+            depPort = leg.departure_port.split(',')[0].trim();
+            arrPort = leg.arrival_port.split(',')[0].trim();
+          } else {
+            continue;
+          }
+          
+          const key = `${depPort}-${arrPort}`;
+          const reverseKey = `${arrPort}-${depPort}`;
+          if (ROUTE_DISTANCES[key]) total += ROUTE_DISTANCES[key];
+          else if (ROUTE_DISTANCES[reverseKey]) total += ROUTE_DISTANCES[reverseKey];
+          else {
+            // Estimate: EU to Suez ~3000nm, Suez to Asia ~5000nm, EU to EU ~500nm
+            const startEU = EU_PORTS.has(depPort);
+            const endEU = EU_PORTS.has(arrPort);
+            if (startEU && endEU) total += 500;
+            else if ((startEU || endEU) && (depPort.includes('Suez') || arrPort.includes('Suez'))) total += 3000;
+            else if (depPort.includes('Suez') || arrPort.includes('Suez')) total += 5000;
+            else total += 2000; // default intercontinental
           }
         }
         return total || 3000; // fallback
@@ -1181,22 +1215,33 @@ export async function fetchVoyages(shipId?: string) {
     };
 
     // Helper: Determine if voyage is intra-EU, extra-EU, or mixed
-    const calculateEUETSCoverage = (legs: string[], origin?: string, destination?: string): number => {
+    const calculateEUETSCoverage = (legs: any[], origin?: string, destination?: string): number => {
       if (legs && legs.length > 0) {
         let euDistance = 0;
         let totalDistance = 0;
         for (const leg of legs) {
-          const parts = leg.split(' → ');
-          if (parts.length === 2) {
-            const startEU = EU_PORTS.has(parts[0]);
-            const endEU = EU_PORTS.has(parts[1]);
-            const legDist = calcDistanceNm([leg], parts[0], parts[1]);
-            totalDistance += legDist;
-            if (startEU && endEU) {
-              euDistance += legDist; // 100% EU
-            } else if (startEU || endEU) {
-              euDistance += legDist * 0.5; // 50% for extra-EU touching EU
-            }
+          // Handle leg objects (new format) or strings (old format)
+          let depPort: string, arrPort: string;
+          if (typeof leg === 'string') {
+            const parts = leg.split(' → ');
+            if (parts.length !== 2) continue;
+            [depPort, arrPort] = parts;
+          } else if (leg.departure_port && leg.arrival_port) {
+            // Extract port name without country code for lookup
+            depPort = leg.departure_port.split(',')[0].trim();
+            arrPort = leg.arrival_port.split(',')[0].trim();
+          } else {
+            continue;
+          }
+          
+          const startEU = EU_PORTS.has(depPort);
+          const endEU = EU_PORTS.has(arrPort);
+          const legDist = calcDistanceNm([leg], depPort, arrPort);
+          totalDistance += legDist;
+          if (startEU && endEU) {
+            euDistance += legDist; // 100% EU
+          } else if (startEU || endEU) {
+            euDistance += legDist * 0.5; // 50% for extra-EU touching EU
           }
         }
         return totalDistance > 0 ? Math.round((euDistance / totalDistance) * 100) : 50;

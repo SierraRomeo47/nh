@@ -39,7 +39,7 @@ export class UsersService {
         u.theme, u.is_active, u.created_at, u.updated_at, u.last_login_at,
         s.name as ship_name
       FROM users u
-      LEFT JOIN ships s ON u.ship_id::text = s.id::text
+      LEFT JOIN ships s ON u.ship_id = s.id
       WHERE u.is_active = true
     `;
     
@@ -103,7 +103,7 @@ export class UsersService {
       SELECT 
         u.*, s.name as ship_name
       FROM users u
-      LEFT JOIN ships s ON u.ship_id::text = s.id::text
+      LEFT JOIN ships s ON u.ship_id = s.id
       WHERE u.id = $1
     `, [userId]);
     

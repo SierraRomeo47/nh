@@ -59,8 +59,14 @@ const UserProfile: React.FC = () => {
       case UserRole.MANAGER: return 'Fleet Manager';
       case UserRole.COMPLIANCE_OFFICER: return 'Compliance Officer';
       case UserRole.TRADER: return 'Emissions Trader';
-      case UserRole.TECHNICAL_SUPERINTENDENT: return 'Technical Superintendent';
-      case UserRole.OPERATIONS_SUPERINTENDENT: return 'Operations Superintendent';
+      case UserRole.TECHNICAL_SUPERINTENDENT: return 'Tech Superintendent';
+      case UserRole.OPERATIONS_SUPERINTENDENT: return 'Ops Superintendent';
+      case UserRole.PORT_CAPTAIN: return 'Port Captain';
+      case UserRole.FLEET_SUPERINTENDENT: return 'Fleet Superintendent';
+      case UserRole.INSURER: return 'Maritime Insurer';
+      case UserRole.MTO: return 'Multimodal Transport Operator';
+      case UserRole.CHARTERER: return 'Charterer';
+      case UserRole.BROKER: return 'Ship Broker';
       case UserRole.ADMIN: return 'Administrator';
       default: return 'Marine Professional';
     }

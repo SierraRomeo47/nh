@@ -61,14 +61,17 @@ const UserManagement: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/users`, {
+        credentials: 'include', // K8s-ready: Cookie-based auth (JWT in HTTP-only cookies)
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || 'mock-token'}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || 'mock-token'}` // Fallback for demo mode
         }
       });
       
       if (response.ok) {
         const data = await response.json();
         setUsers(data.data || []);
+      } else {
+        console.error('Failed to fetch users:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -80,14 +83,17 @@ const UserManagement: React.FC = () => {
   const fetchStats = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/stats`, {
+        credentials: 'include', // K8s-ready: Cookie-based auth (JWT in HTTP-only cookies)
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || 'mock-token'}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || 'mock-token'}` // Fallback for demo mode
         }
       });
       
       if (response.ok) {
         const data = await response.json();
         setStats(data.data);
+      } else {
+        console.error('Failed to fetch stats:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);

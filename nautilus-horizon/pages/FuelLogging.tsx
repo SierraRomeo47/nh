@@ -3,10 +3,39 @@
 import React, { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import Card from '../components/Card';
+import OVDImport from '../components/OVDImport';
+import OVDExport from '../components/OVDExport';
+import SyncStatus from '../components/SyncStatus';
+import SyncConfigModal from '../components/modals/SyncConfigModal';
+import NoonReportForm from '../components/NoonReportForm';
+import BunkerReportForm from '../components/BunkerReportForm';
+import SOFReportForm from '../components/SOFReportForm';
 // Using string literals for fuel types since they're not in the simplified context
+
+// Roles allowed to access OVD features
+const OVD_ALLOWED_ROLES = [
+  'ENGINEER',
+  'CHIEF_ENGINEER',
+  'OPERATIONS_SUPERINTENDENT',
+  'TECHNICAL_SUPERINTENDENT',
+  'COMPLIANCE_OFFICER',
+  'ADMIN'
+];
 
 const FuelLogging: React.FC = () => {
   const { user } = useUser();
+  const [showSyncConfigModal, setShowSyncConfigModal] = useState(false);
+  const [activeOVDTab, setActiveOVDTab] = useState<'import' | 'export' | 'status'>('import');
+  const [activeReportTab, setActiveReportTab] = useState<'noon' | 'bunker' | 'sof'>('noon');
+  
+  // Check if user has OVD access
+  const hasOVDAccess = user?.role && OVD_ALLOWED_ROLES.includes(user.role);
+  
+  // Engineers and officers can submit reports
+  const canSubmitReports = user?.role && [
+    'ENGINEER', 'CHIEF_ENGINEER', 'OFFICER', 'CAPTAIN',
+    'OPERATIONS_SUPERINTENDENT', 'TECHNICAL_SUPERINTENDENT', 'ADMIN'
+  ].includes(user.role);
   const [formData, setFormData] = useState({
     fuelType: 'MGO',
     fuelCategory: 'FOSSIL',
@@ -181,6 +210,159 @@ const FuelLogging: React.FC = () => {
           </div>
         </div>
       </Card>
+      
+      {/* OVD Import/Export Section - Only for authorized roles */}
+      {hasOVDAccess && (
+        <Card>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-text-primary">
+                  DNV Integration
+                </h2>
+                <p className="text-sm text-text-secondary mt-1">
+                  Import and export operational vessel data
+                </p>
+              </div>
+              {(user?.role === 'ADMIN' || user?.role === 'OPERATIONS_SUPERINTENDENT' || user?.role === 'TECHNICAL_SUPERINTENDENT') && (
+                <button
+                  onClick={() => setShowSyncConfigModal(true)}
+                  className="px-4 py-2 bg-card border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-colors text-sm font-medium"
+                >
+                  ⚙️ Configure Auto-Sync
+                </button>
+              )}
+            </div>
+            
+            {/* Tab Navigation */}
+            <div className="flex space-x-2 border-b border-subtle">
+              <button
+                onClick={() => setActiveOVDTab('import')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeOVDTab === 'import'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                📥 Import
+              </button>
+              <button
+                onClick={() => setActiveOVDTab('export')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeOVDTab === 'export'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                📤 Export
+              </button>
+              <button
+                onClick={() => setActiveOVDTab('status')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeOVDTab === 'status'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                📊 Sync Status
+              </button>
+            </div>
+            
+            {/* Tab Content */}
+            <div className="pt-4">
+              {activeOVDTab === 'import' && <OVDImport />}
+              {activeOVDTab === 'export' && <OVDExport />}
+              {activeOVDTab === 'status' && <SyncStatus />}
+            </div>
+          </div>
+        </Card>
+      )}
+      
+      {/* Access Denied Message for non-authorized roles */}
+      {!hasOVDAccess && user && (
+        <Card>
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3">🔒</div>
+            <h3 className="text-lg font-semibold text-text-primary mb-2">
+              DNV Integration Access Restricted
+            </h3>
+            <p className="text-sm text-text-secondary">
+              DNV import/export features are available to Engineers, Chief Engineers,<br/>
+              Operations Superintendents, Technical Superintendents, Compliance Officers, and Administrators.
+            </p>
+            <p className="text-xs text-text-muted mt-2">
+              Your current role: {user.role}
+            </p>
+          </div>
+        </Card>
+      )}
+      
+      {/* Vessel Reporting System - DNV Standards */}
+      {canSubmitReports && (
+        <Card>
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold text-text-primary">
+                📋 Vessel Reports (DNV Standards)
+              </h2>
+              <p className="text-sm text-text-secondary mt-1">
+                Submit daily noon reports, bunker reports, and statement of facts
+              </p>
+            </div>
+            
+            {/* Tab Navigation */}
+            <div className="flex space-x-2 border-b border-subtle">
+              <button
+                onClick={() => setActiveReportTab('noon')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeReportTab === 'noon'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                📍 Noon Report
+              </button>
+              <button
+                onClick={() => setActiveReportTab('bunker')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeReportTab === 'bunker'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                ⛽ Bunker Report
+              </button>
+              <button
+                onClick={() => setActiveReportTab('sof')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeReportTab === 'sof'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                📄 SOF Report
+              </button>
+            </div>
+            
+            {/* Tab Content */}
+            <div className="pt-4">
+              {activeReportTab === 'noon' && <NoonReportForm />}
+              {activeReportTab === 'bunker' && <BunkerReportForm />}
+              {activeReportTab === 'sof' && <SOFReportForm />}
+            </div>
+          </div>
+        </Card>
+      )}
+      
+      {/* Sync Configuration Modal */}
+      <SyncConfigModal
+        isOpen={showSyncConfigModal}
+        onClose={() => setShowSyncConfigModal(false)}
+        onSuccess={() => {
+          setShowSyncConfigModal(false);
+          // Optionally refresh sync status
+        }}
+      />
     </div>
   );
 };

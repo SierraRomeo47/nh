@@ -93,6 +93,12 @@ const UserSwitcher: React.FC = () => {
       'TRADER': UserRole.TRADER,
       'TECHNICAL_SUPERINTENDENT': UserRole.TECHNICAL_SUPERINTENDENT,
       'OPERATIONS_SUPERINTENDENT': UserRole.OPERATIONS_SUPERINTENDENT,
+      'PORT_CAPTAIN': UserRole.PORT_CAPTAIN,
+      'FLEET_SUPERINTENDENT': UserRole.FLEET_SUPERINTENDENT,
+      'INSURER': UserRole.INSURER,
+      'MTO': UserRole.MTO,
+      'CHARTERER': UserRole.CHARTERER,
+      'BROKER': UserRole.BROKER,
       'ADMIN': UserRole.ADMIN
     };
     // Abbreviation mappings commonly used by backend
@@ -129,12 +135,14 @@ const UserSwitcher: React.FC = () => {
       'MANAGER': 'Fleet Manager',
       'COMPLIANCE_OFFICER': 'Compliance Manager',
       'TRADER': 'Emissions Trader',
-      'TECHNICAL_SUPERINTENDENT': 'Technical Superintendent',
-      'OPERATIONS_SUPERINTENDENT': 'Operations Superintendent',
+      'TECHNICAL_SUPERINTENDENT': 'Tech Superintendent',
+      'OPERATIONS_SUPERINTENDENT': 'Ops Superintendent',
       'PORT_CAPTAIN': 'Port Captain',
       'FLEET_SUPERINTENDENT': 'Fleet Superintendent',
       'INSURER': 'Maritime Insurer',
       'MTO': 'Multimodal Transport Operator',
+      'CHARTERER': 'Charterer',
+      'BROKER': 'Ship Broker',
       'ADMIN': 'Administrator',
       'A/B': 'Able Seaman',
       'O/S': 'Ordinary Seaman',
@@ -301,7 +309,7 @@ const UserSwitcher: React.FC = () => {
                           {backendUser.first_name} {backendUser.last_name}
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                          {getRoleDisplayName(backendUser.position || backendUser.role)}
+                          {getRoleDisplayName(backendUser.role)}
                         </div>
                       </div>
                       {isCurrentUser && (

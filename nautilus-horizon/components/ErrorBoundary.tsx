@@ -1,14 +1,19 @@
 // Error Boundary Component to prevent blank pages
 
 import React, { Component, ReactNode } from 'react';
+import { logger, LogLevel } from '../services/logger';
 
 interface Props {
   children: ReactNode;
+  fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
   error?: Error;
+  errorInfo?: React.ErrorInfo;
+  errorId?: string;
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -18,11 +23,37 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    const errorId = `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return { hasError: true, error, errorId };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    // Log error with full context
+    logger.componentError(
+      'ErrorBoundary',
+      error,
+      {
+        componentStack: errorInfo.componentStack,
+        errorBoundary: true,
+      },
+      {
+        component: 'ErrorBoundary',
+        action: 'componentDidCatch',
+        errorId: this.state.errorId,
+      }
+    );
+
+    // Call custom error handler if provided
+    if (this.props.onError) {
+      try {
+        this.props.onError(error, errorInfo);
+      } catch (e) {
+        logger.error('Error in onError handler', e as Error);
+      }
+    }
+
+    // Update state with error info
+    this.setState({ errorInfo });
   }
 
   render() {
@@ -51,17 +82,43 @@ class ErrorBoundary extends Component<Props, State> {
                 Try Again
               </button>
             </div>
+            {this.state.errorId && (
+              <div className="mb-4 text-sm text-text-secondary">
+                Error ID: <code className="bg-subtle px-2 py-1 rounded">{this.state.errorId}</code>
+              </div>
+            )}
             {this.state.error && (
               <details className="mt-6 text-left">
-                <summary className="cursor-pointer text-text-secondary">
-                  Error Details
+                <summary className="cursor-pointer text-text-secondary hover:text-text-primary">
+                  Error Details (Click to expand)
                 </summary>
-                <pre className="mt-2 p-4 bg-card border border-subtle rounded-lg text-xs text-text-secondary overflow-auto">
-                  {this.state.error.message}
-                  {this.state.error.stack}
-                </pre>
+                <div className="mt-2 p-4 bg-card border border-subtle rounded-lg text-xs text-text-secondary overflow-auto max-h-96">
+                  <div className="mb-2">
+                    <strong>Message:</strong>
+                    <div className="mt-1 text-error">{this.state.error.message}</div>
+                  </div>
+                  {this.state.error.stack && (
+                    <div className="mb-2">
+                      <strong>Stack Trace:</strong>
+                      <pre className="mt-1 whitespace-pre-wrap font-mono text-xs">
+                        {this.state.error.stack}
+                      </pre>
+                    </div>
+                  )}
+                  {this.state.errorInfo?.componentStack && (
+                    <div>
+                      <strong>Component Stack:</strong>
+                      <pre className="mt-1 whitespace-pre-wrap font-mono text-xs">
+                        {this.state.errorInfo.componentStack}
+                      </pre>
+                    </div>
+                  )}
+                </div>
               </details>
             )}
+            <div className="mt-4 text-xs text-text-secondary">
+              <p>This error has been logged. If the problem persists, please contact support with the Error ID above.</p>
+            </div>
           </div>
         </div>
       );

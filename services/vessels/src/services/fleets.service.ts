@@ -12,21 +12,14 @@ export interface Fleet {
 
 export class FleetsService {
   async getAllFleets(organizationId: string, userRole?: string): Promise<Fleet[]> {
-    // Admins see all fleets, others see only their organization's fleets
-    if (userRole === 'ADMIN') {
-      const result = await pool.query(`
-        SELECT * FROM fleets
-        WHERE is_active = true
-        ORDER BY name
-      `);
-      return result.rows;
-    }
-    
+    // For public access (no auth), show all active fleets
+    // Fleets can be global or organization-specific
     const result = await pool.query(`
       SELECT * FROM fleets
-      WHERE organization_id = $1 AND is_active = true
+      WHERE is_active = true
+      AND (organization_id IS NULL OR organization_id = $1 OR $2 = 'ADMIN')
       ORDER BY name
-    `, [organizationId]);
+    `, [organizationId, userRole || 'ADMIN']);
     
     return result.rows;
   }

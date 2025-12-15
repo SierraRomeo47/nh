@@ -103,7 +103,44 @@ const VoyageTable: React.FC<VoyageTableProps> = ({ voyages, section, maxExposure
       case 'imo':
         return voyage.imo || '—';
       case 'legs':
-        return voyage.legs && voyage.legs.length > 0 ? voyage.legs.join(', ') : '—';
+        // Show UN/LOCODE format from master ports database
+        // Full port names shown only when clicking on the vessel for details
+        if (!voyage.legs || voyage.legs.length === 0) return '—';
+        
+        const formattedLegs = voyage.legs.map((leg: any) => {
+          // If leg is an object with UN/LOCODE from backend, use it
+          if (typeof leg === 'object' && leg !== null) {
+            if (leg.departure_port_unlocode && leg.arrival_port_unlocode) {
+              return `${leg.departure_port_unlocode} → ${leg.arrival_port_unlocode}`;
+            }
+            // Fallback: Use port names from leg object
+            if (leg.departure_port && leg.arrival_port) {
+              // Extract port names without country codes for display
+              const depPort = leg.departure_port.split(',')[0].trim();
+              const arrPort = leg.arrival_port.split(',')[0].trim();
+              return `${depPort} → ${arrPort}`;
+            }
+          }
+          // If leg is a string (legacy format), try to parse it
+          if (typeof leg === 'string') {
+            const parts = leg.split(' → ');
+            if (parts.length === 2) {
+              const getPortCode = (portStr: string) => {
+                const [portName, countryCode] = portStr.split(', ').map((s: string) => s.trim());
+                if (countryCode && portName) {
+                  // Use real UN/LOCODE format: CC + port code
+                  return countryCode + portName.substring(0, 3).toUpperCase();
+                }
+                return portStr;
+              };
+              return `${getPortCode(parts[0])} → ${getPortCode(parts[1])}`;
+            }
+            return leg; // Return as-is if can't parse
+          }
+          return '—'; // Safe fallback instead of [object Object]
+        });
+        
+        return formattedLegs.join(', ');
       case 'fuel_total':
         const totalFuel = voyage.imo_dcs?.fuel_by_type_t ? Object.values(voyage.imo_dcs.fuel_by_type_t).reduce((a, b) => a + b, 0) : 0;
         return `${totalFuel.toFixed(1)}t`;
@@ -363,6 +400,8 @@ const Voyages: React.FC = () => {
   const [voyages, setVoyages] = useState<Voyage[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [expandedShips, setExpandedShips] = useState<Set<string>>(new Set());
+  const [selectedVoyagePerShip, setSelectedVoyagePerShip] = useState<Map<string, string>>(new Map());
   const navigate = useNavigate();
   
   // Current filters
@@ -538,15 +577,195 @@ const Voyages: React.FC = () => {
         ))}
       </div>
       
-      {/* Voyages Table */}
+      {/* Voyages Table - Grouped by Ship */}
       <Card>
-        <VoyageTable 
+        <GroupedShipVoyageTable 
           voyages={filteredVoyages}
           section={currentSection}
           maxExposure={maxExposure}
           onVoyageSelect={handleVoyageSelect}
+          expandedShips={expandedShips}
+          setExpandedShips={setExpandedShips}
+          selectedVoyagePerShip={selectedVoyagePerShip}
+          setSelectedVoyagePerShip={setSelectedVoyagePerShip}
         />
       </Card>
+    </div>
+  );
+};
+
+// Grouped Ship Voyage Table Component
+interface GroupedShipVoyageTableProps {
+  voyages: Voyage[];
+  section: string;
+  maxExposure: number;
+  onVoyageSelect: (voyageId: string) => void;
+  expandedShips: Set<string>;
+  setExpandedShips: (ships: Set<string>) => void;
+  selectedVoyagePerShip: Map<string, string>;
+  setSelectedVoyagePerShip: (map: Map<string, string>) => void;
+}
+
+const GroupedShipVoyageTable: React.FC<GroupedShipVoyageTableProps> = ({ 
+  voyages, 
+  section, 
+  maxExposure, 
+  onVoyageSelect,
+  expandedShips,
+  setExpandedShips,
+  selectedVoyagePerShip,
+  setSelectedVoyagePerShip
+}) => {
+  // Group voyages by ship
+  const groupedVoyages = React.useMemo(() => {
+    const groups = new Map<string, {
+      ship_name: string;
+      imo: string;
+      ship_type: string;
+      voyages: Voyage[];
+    }>();
+    
+    voyages.forEach(voyage => {
+      const key = `${voyage.ship_name}-${voyage.imo}`;
+      if (!groups.has(key)) {
+        groups.set(key, {
+          ship_name: voyage.ship_name || '',
+          imo: voyage.imo || '',
+          ship_type: voyage.ship_type || '',
+          voyages: []
+        });
+      }
+      groups.get(key)!.voyages.push(voyage);
+    });
+    
+    return Array.from(groups.values()).sort((a, b) => a.ship_name.localeCompare(b.ship_name));
+  }, [voyages]);
+  
+  const toggleShipExpansion = (shipName: string) => {
+    const newExpanded = new Set(expandedShips);
+    if (newExpanded.has(shipName)) {
+      newExpanded.delete(shipName);
+    } else {
+      newExpanded.add(shipName);
+    }
+    setExpandedShips(newExpanded);
+  };
+  
+  const selectVoyageForShip = (shipName: string, voyageId: string) => {
+    const newMap = new Map(selectedVoyagePerShip);
+    newMap.set(shipName, voyageId);
+    setSelectedVoyagePerShip(newMap);
+  };
+  
+  const getDisplayedVoyage = (group: any): Voyage => {
+    const selectedId = selectedVoyagePerShip.get(group.ship_name);
+    if (selectedId) {
+      const found = group.voyages.find((v: Voyage) => v.voyage_id === selectedId);
+      if (found) return found;
+    }
+    // Default to most recent voyage (first in list)
+    return group.voyages[0];
+  };
+  
+  if (groupedVoyages.length === 0) {
+    return <div className="text-center text-gray-400 py-8">No voyages found</div>;
+  }
+  
+  const columns = VoyageTable({ voyages: [], section, maxExposure, onVoyageSelect }).props.children?.props?.children?.[0]?.props?.children || [];
+  
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-subtle">
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Ship Name</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">IMO</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Voyage Selection</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Voyage Legs</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">EU ETS Share</th>
+            <th className="text-right px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">EUA Exposure (tCO₂)</th>
+            <th className="text-right px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">FuelEU Balance (gCO₂e)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {groupedVoyages.map((group, idx) => {
+            const displayedVoyage = getDisplayedVoyage(group);
+            const isExpanded = expandedShips.has(group.ship_name);
+            
+            return (
+              <tr key={`${group.ship_name}-${idx}`} className="border-b border-subtle hover:bg-subtle/50">
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => onVoyageSelect(displayedVoyage.voyage_id)}
+                    className="font-medium text-primary hover:text-primary/80 text-left"
+                  >
+                    {group.ship_name}
+                    {group.voyages.length > 1 && (
+                      <span className="ml-2 text-xs text-gray-400">({group.voyages.length} voyages)</span>
+                    )}
+                  </button>
+                </td>
+                <td className="px-4 py-3 text-gray-300 font-mono text-sm">{group.imo}</td>
+                <td className="px-4 py-3">
+                  {group.voyages.length > 1 ? (
+                    <select
+                      value={selectedVoyagePerShip.get(group.ship_name) || group.voyages[0].voyage_id}
+                      onChange={(e) => selectVoyageForShip(group.ship_name, e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="px-2 py-1 bg-card border border-subtle rounded text-xs text-white focus:ring-2 focus:ring-primary"
+                    >
+                      {group.voyages.map((v: Voyage) => {
+                        const startDate = v.start_date ? new Date(v.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
+                        const charterType = v.charter_type || 'VOYAGE';
+                        return (
+                          <option key={v.voyage_id} value={v.voyage_id}>
+                            {v.voyage_id} • {startDate} • {charterType.replace('_', ' ')}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  ) : (
+                    <span className="text-xs text-gray-400 font-mono">{displayedVoyage.voyage_id}</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-300">
+                  {(() => {
+                    if (!displayedVoyage.legs || displayedVoyage.legs.length === 0) return '—';
+                    const formattedLegs = displayedVoyage.legs.map((leg: any) => {
+                      if (typeof leg === 'object' && leg !== null) {
+                        if (leg.departure_port_unlocode && leg.arrival_port_unlocode) {
+                          return `${leg.departure_port_unlocode} → ${leg.arrival_port_unlocode}`;
+                        }
+                        if (leg.departure_port && leg.arrival_port) {
+                          const depPort = leg.departure_port.split(',')[0].trim();
+                          const arrPort = leg.arrival_port.split(',')[0].trim();
+                          return `${depPort} → ${arrPort}`;
+                        }
+                      }
+                      if (typeof leg === 'string') {
+                        return leg;
+                      }
+                      return '—';
+                    });
+                    return formattedLegs.join(', ');
+                  })()}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {displayedVoyage.eu_ets?.covered_share_pct !== undefined 
+                    ? `${displayedVoyage.eu_ets.covered_share_pct}%` 
+                    : '—'}
+                </td>
+                <td className="px-4 py-3">
+                  <ExposureCell voyage={displayedVoyage} maxExposure={maxExposure} />
+                </td>
+                <td className="px-4 py-3">
+                  <BalanceCell value={displayedVoyage.fueleu?.compliance_balance_gco2e || 0} />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 };
