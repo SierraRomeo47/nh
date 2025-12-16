@@ -11,7 +11,7 @@ FROM node:20-alpine AS production
 RUN apk add --no-cache wget
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 RUN npx prisma generate
