@@ -6,7 +6,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - auth
       - vessels
@@ -24,7 +24,7 @@ services:
           memory: 64M
   auth:
     build:
-      context: ./services/auth
+      context: ../services/auth
       dockerfile: Dockerfile
     container_name: nh_auth
     environment:
@@ -52,7 +52,7 @@ services:
           memory: 256M
   vessels:
     build:
-      context: ./services/vessels
+      context: ../services/vessels
       dockerfile: Dockerfile
     container_name: nh_vessels
     environment:
@@ -77,7 +77,7 @@ services:
           memory: 256M
   voyages:
     build:
-      context: ./services/voyages
+      context: ../services/voyages
       dockerfile: Dockerfile
     container_name: nh_voyages
     environment:
@@ -102,7 +102,7 @@ services:
           memory: 256M
   compliance:
     build:
-      context: ./services/compliance
+      context: ../services/compliance
       dockerfile: Dockerfile
     container_name: nh_compliance
     environment:
@@ -127,7 +127,7 @@ services:
           memory: 256M
   compliance-ledger:
     build:
-      context: ./services/compliance-ledger
+      context: ../services/compliance-ledger
       dockerfile: Dockerfile
     container_name: nh_compliance_ledger
     environment:
@@ -153,7 +153,7 @@ services:
           memory: 256M
   trading:
     build:
-      context: ./services/trading
+      context: ../services/trading
       dockerfile: Dockerfile
     container_name: nh_trading
     environment:
@@ -178,7 +178,7 @@ services:
           memory: 256M
   insurance:
     build:
-      context: ./services/insurance
+      context: ../services/insurance
       dockerfile: Dockerfile
     container_name: nh_insurance
     environment:
@@ -204,7 +204,7 @@ services:
           memory: 256M
   master-data:
     build:
-      context: ./services/master-data
+      context: ../services/master-data
       dockerfile: Dockerfile
     container_name: nh_master_data
     environment:
