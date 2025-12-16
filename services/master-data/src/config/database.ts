@@ -1,11 +1,7 @@
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  host: 'db',
-  port: 5432,
-  database: 'nautilus',
-  user: 'postgres',
-  password: process.env.POSTGRES_PASSWORD || 'nautilus2025',
+  connectionString: process.env.DB_URL,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,

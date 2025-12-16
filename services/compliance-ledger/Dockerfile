@@ -1,12 +1,19 @@
-# Simple Node.js service container for dev
-FROM node:20-alpine
-RUN apk add --no-cache wget openssl openssl-dev
+# Multi-stage build for production
+FROM node:20-alpine AS builder
+RUN apk add --no-cache wget
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
-COPY prisma ./prisma
-RUN npx prisma generate
+RUN npm ci
 COPY . .
-ENV PORT=3006
+RUN npm run build
+
+FROM node:20-alpine AS production
+RUN apk add --no-cache wget
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+RUN npx prisma generate
 EXPOSE 3006
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]

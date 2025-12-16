@@ -6,7 +6,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - auth
       - vessels
@@ -16,16 +16,23 @@ services:
       - trading
       - insurance
       - master-data
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
   auth:
     build:
       context: ./services/auth
       dockerfile: Dockerfile
     container_name: nh_auth
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3001
       - JWT_SECRET=${JWT_SECRET}
       - DB_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
     expose:
       - "3001"
     depends_on:
@@ -36,13 +43,19 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
   vessels:
     build:
       context: ./services/vessels
       dockerfile: Dockerfile
     container_name: nh_vessels
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3002
       - DB_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
     expose:
@@ -55,13 +68,19 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
   voyages:
     build:
       context: ./services/voyages
       dockerfile: Dockerfile
     container_name: nh_voyages
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3003
       - DB_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
     expose:
@@ -74,13 +93,19 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
   compliance:
     build:
       context: ./services/compliance
       dockerfile: Dockerfile
     container_name: nh_compliance
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3004
       - DB_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
     expose:
@@ -93,14 +118,21 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
   compliance-ledger:
     build:
       context: ./services/compliance-ledger
       dockerfile: Dockerfile
     container_name: nh_compliance_ledger
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3006
+      - DB_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
       - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
     expose:
       - "3006"
@@ -112,13 +144,19 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
   trading:
     build:
       context: ./services/trading
       dockerfile: Dockerfile
     container_name: nh_trading
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3005
       - DB_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
     expose:
@@ -131,15 +169,22 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
   insurance:
     build:
       context: ./services/insurance
       dockerfile: Dockerfile
     container_name: nh_insurance
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3007
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
     expose:
       - "3007"
     depends_on:
@@ -150,15 +195,22 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
   master-data:
     build:
       context: ./services/master-data
       dockerfile: Dockerfile
     container_name: nh_master_data
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3008
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/nautilus
     expose:
       - "3008"
     depends_on:
@@ -169,6 +221,12 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 256M
   db:
     image: postgres:16-alpine
     container_name: nh_db
@@ -176,8 +234,6 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=nautilus
       - POSTGRES_USER=postgres
-    ports:
-      - "5432:5432"
     volumes:
       - nh_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -186,6 +242,12 @@ services:
       timeout: 5s
       retries: 30
       start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
 volumes:
   nh_pgdata:
 

@@ -12,11 +12,30 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // CORS configuration with credentials support for cookies
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:3000',
+  'https://*.vercel.app',
+  'https://*.nautilushorizon.com',
+  'https://nautilushorizon.com'
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.some(allowed => {
+      if (allowed.includes('*')) {
+        const pattern = allowed.replace('*', '.*');
+        return new RegExp(`^${pattern}$`).test(origin);
+      }
+      return origin === allowed;
+    })) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // Required for cookies
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Cookie parser middleware (required for reading cookies)
@@ -34,7 +53,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api', userAssignmentsRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Auth service running on port ${PORT}`);
-});
+// Export for Vercel serverless functions
+export default app;
+
+// Start server if not in serverless environment (Vercel sets VERCEL=1)
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`Auth service running on port ${PORT}`);
+  });
+}
 
